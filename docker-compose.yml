@@ -1,0 +1,45 @@
+services:
+  quadruped:
+    container_name: quadruped_container
+    image: quadruped:latest
+    ipc: host
+    network_mode: host
+    privileged: true
+    user: ros  # Run as the user 'ros'
+    environment:
+      - DISPLAY
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.Xauthority
+    volumes:
+      # Map the shared folder
+      - ./src:/home/ros/ros2_ws/src      # Map X11 for GUI
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - $HOME/.Xauthority:/tmp/.Xauthority:rw
+      # Optional: Map source code for live development
+      # - ./src:/home/ros/ros2_ws/src
+    command: ["tail", "-f", "/dev/null"]
+
+  microros_agent:
+    image: microros/micro-ros-agent:jazzy
+    container_name: microros_agent
+    privileged: true
+    network_mode: host
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
+    command: serial --dev /dev/ttyUSB0 -v6
+
+    # The following services are commented out for this tutorial.
+    # They demonstrate how to create multiple containers from the same Docker image,
+    # each running a specific ROS 2 node. These containers can communicate with each other
+    # because they share the same ROS_DOMAIN_ID.
+    # Publisher service: Runs the demo talker node
+  # minimal_publisher:
+  #   <<: *manipulation  # This uses all the same settings as the 'manipulation' service
+  #   container_name: minimal_publisher
+  #   command: ["ros2", "run", "demo_nodes_cpp", "talker"]
+  #
+  #   # Subscriber service: Runs the demo listener node
+  # minimal_subscriber:
+  #   <<: *manipulation  # This uses all the same settings as the 'manipulation' service
+  #   container_name: minimal_subscriber
+  #   command: ["ros2", "run", "demo_nodes_cpp", "listener"]
