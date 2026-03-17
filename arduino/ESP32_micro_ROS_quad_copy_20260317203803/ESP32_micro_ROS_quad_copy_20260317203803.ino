@@ -47,16 +47,22 @@ void subscription_callback(const void * msgin) {
   // Flash LED rapidly on receive
   digitalWrite(ledPin, !digitalRead(ledPin)); 
   
-  if (incoming_msg->position.size >= 8) {
-    for (int i = 0; i < 8; i++) {
-      float angle_rad = incoming_msg->position.data[i];
-      int angle_deg = (int)((angle_rad * 180.0) / PI) + 90;
+  // BYPASS THE SIZE CHECK: 
+  // Force the ESP32 to read the 8 slots in the memory buffer
+  for (int i = 0; i < 8; i++) {
+    
+    // Extract the angle (JointState uses doubles, so we cast to float)
+    float angle_rad = (float)incoming_msg->position.data[i];
+    
+    // Convert Radians to Degrees and center at 90
+    int angle_deg = (int)((angle_rad * 180.0) / PI) + 90;
 
-      if (angle_deg < 0) angle_deg = 0;
-      if (angle_deg > 180) angle_deg = 180;
+    // Safety limits to protect the plastic servo gears
+    if (angle_deg < 0) angle_deg = 0;
+    if (angle_deg > 180) angle_deg = 180;
 
-      servos[i].write(angle_deg);
-    }
+    // Move the motor!
+    servos[i].write(angle_deg);
   }
 }
 

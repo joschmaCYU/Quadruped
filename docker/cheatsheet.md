@@ -16,10 +16,9 @@ bash build.sh
 docker rmi quadruped:latest
 
 
-
+If ghost topic :
 ros2 daemon stop
 ros2 daemon start
 ros2 topic list
 
-
-ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0 -v6
+If esp32 not connecting plug the battery after esp32 start
