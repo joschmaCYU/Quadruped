@@ -1,0 +1,23 @@
+controller_manager:
+  ros__parameters:
+    use_sim_time: true
+    update_rate: 50
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    joint_group_position_controller:
+      type: position_controllers/JointGroupPositionController
+
+joint_group_position_controller:
+  ros__parameters:
+    use_sim_time: true
+    joints:
+      - base_link_to_cube5
+      - cube5_to_cube9
+      - base_link_to_cube6
+      - cube6_to_cube10
+      - base_link_to_cube7
+      - cube7_to_cube11
+      - base_link_to_cube8
+      - cube8_to_cube12

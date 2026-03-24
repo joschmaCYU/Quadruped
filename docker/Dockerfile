@@ -24,7 +24,9 @@ RUN apt-get update -q && \
     python3-vcstool \
     software-properties-common \
     ros-${ROS_DISTRO}-ros-gz \
+    ros-${ROS_DISTRO}-gz-ros2-control
     ros-${ROS_DISTRO}-ros2-control \
+    ros-${ROS_DISTRO}-ros2-controllers \
     ros-${ROS_DISTRO}-teleop-twist-keyboard \
     ros-${ROS_DISTRO}-xacro \
     ros-${ROS_DISTRO}-slam-toolbox \

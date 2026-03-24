@@ -23,7 +23,7 @@
     </collision>
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0" />
-      <mass value="1" />
+      <mass value="0.05" />
       <inertia ixx="0.16666666666666666" ixy="0" ixz="0" iyy="0.16666666666666666" iyz="0" izz="0.16666666666666666" />
     </inertial>
   </link>
@@ -53,7 +53,7 @@
     </collision>
     <inertial>
       <origin xyz="0 0.103 0" rpy="0 0 0" />
-      <mass value="1" />
+      <mass value="0.05" />
       <inertia ixx="0.16666666666666666" ixy="0" ixz="0" iyy="0.16666666666666666" iyz="0" izz="0.16666666666666666" />
     </inertial>
   </link>
@@ -82,7 +82,7 @@
     </collision>
     <inertial>
       <origin xyz="-2.127657382593146e-18 -0.125 0" rpy="0 0 0" />
-      <mass value="1" />
+      <mass value="0.05" />
       <inertia ixx="0.16666666666666666" ixy="0" ixz="0" iyy="0.16666666666666666" iyz="0" izz="0.16666666666666666" />
     </inertial>
   </link>
@@ -112,7 +112,7 @@
     </collision>
     <inertial>
       <origin xyz="0 0.103 0" rpy="0 0 0" />
-      <mass value="1" />
+      <mass value="0.05" />
       <inertia ixx="0.16666666666666666" ixy="0" ixz="0" iyy="0.16666666666666666" iyz="0" izz="0.16666666666666666" />
     </inertial>
   </link>
@@ -141,7 +141,7 @@
     </collision>
     <inertial>
       <origin xyz="-2.127657382593146e-18 -0.125 0" rpy="0 0 0" />
-      <mass value="1" />
+      <mass value="0.05" />
       <inertia ixx="0.16666666666666666" ixy="0" ixz="0" iyy="0.16666666666666666" iyz="0" izz="0.16666666666666666" />
     </inertial>
   </link>
@@ -171,7 +171,7 @@
     </collision>
     <inertial>
       <origin xyz="0 0.103 0" rpy="0 0 0" />
-      <mass value="1" />
+      <mass value="0.05" />
       <inertia ixx="0.16666666666666666" ixy="0" ixz="0" iyy="0.16666666666666666" iyz="0" izz="0.16666666666666666" />
     </inertial>
   </link>
@@ -200,7 +200,7 @@
     </collision>
     <inertial>
       <origin xyz="-2.127657382593146e-18 -0.125 0" rpy="0 0 0" />
-      <mass value="1" />
+      <mass value="0.05" />
       <inertia ixx="0.16666666666666666" ixy="0" ixz="0" iyy="0.16666666666666666" iyz="0" izz="0.16666666666666666" />
     </inertial>
   </link>
@@ -230,7 +230,7 @@
     </collision>
     <inertial>
       <origin xyz="0 0.103 0" rpy="0 0 0" />
-      <mass value="1" />
+      <mass value="0.05" />
       <inertia ixx="0.16666666666666666" ixy="0" ixz="0" iyy="0.16666666666666666" iyz="0" izz="0.16666666666666666" />
     </inertial>
   </link>
@@ -259,8 +259,87 @@
     </collision>
     <inertial>
       <origin xyz="-2.127657382593146e-18 -0.125 0" rpy="0 0 0" />
-      <mass value="1" />
+      <mass value="0.05" />
       <inertia ixx="0.16666666666666666" ixy="0" ixz="0" iyy="0.16666666666666666" iyz="0" izz="0.16666666666666666" />
     </inertial>
   </link>
+
+
+  <ros2_control name="GazeboSimSystem" type="system">
+    <hardware>
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+    </hardware>
+
+    
+
+    <joint name="base_link_to_cube5">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+    <joint name="cube5_to_cube9">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="base_link_to_cube6">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+    <joint name="cube6_to_cube10">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="base_link_to_cube7">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+    <joint name="cube7_to_cube11">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="base_link_to_cube8">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+    <joint name="cube8_to_cube12">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+  </ros2_control>
+
+  <gazebo reference="cube9">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+  </gazebo>
+  <gazebo reference="cube10">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+  </gazebo>
+  <gazebo reference="cube11">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+  </gazebo>
+  <gazebo reference="cube12">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+  </gazebo>
+  <gazebo>
+    <plugin filename="libgz_ros2_control-system.so" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find quadruped_basics)/config/controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
 </robot>
