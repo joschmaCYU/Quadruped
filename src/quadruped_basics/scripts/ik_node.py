@@ -25,7 +25,7 @@ class GazeboQuadrupedNode(Node):
 
     # --- THE NEW SPIDER MATH ---
     def get_spider_gait(self, t, phase_offset):
-        T = 2.5 # time to complet the movement
+        T = 2 # time to complet the movement
         duty_factor = 0.60    # 60% of the time on the ground
         cycle_progress = ((t / T) + phase_offset) % 1.0
         

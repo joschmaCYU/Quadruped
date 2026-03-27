@@ -49,6 +49,17 @@ def generate_launch_description():
         ],
     )
 
+    clock_bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+            '/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
+            '/belly_scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan'
+        ],
+        output='screen'
+    )
+
     # 6. Turn on the Broadcaster (Reads the joints)
     load_joint_state_broadcaster = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'joint_state_broadcaster'],
@@ -58,14 +69,6 @@ def generate_launch_description():
     # 7. Turn on the Position Controller (Listens to Python and moves the virtual motors)
     load_position_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'joint_group_position_controller'],
-        output='screen'
-    )
-
-    # NEW: The Clock Bridge (Pipes Gazebo's simulated time into ROS 2)
-    clock_bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'],
         output='screen'
     )
 
