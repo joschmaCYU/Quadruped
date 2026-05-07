@@ -1,15 +1,39 @@
-# YMA-Quadruped
+# YMA Quadruped ROS2
+(banner)
 
-## Short presentation
 This repo is for my quadruped robot (code, 3D files, etc.). <br>
 This walking robot can autonomously navigate thanks to Nav2 and SLAM. I built this with ROS 2 Jazzy, running on an ESP32 and a Raspberry Pi.<br>
 My goal is to show examples of how to make your own autonomous quadruped with ROS 2.<br>
 ## What it can do
 https://github.com/user-attachments/assets/2a4f5992-fd1c-4fa5-9b9c-b5832c5c24f9
-## The chalenge of making a walking robot
-It's friction and foot slippage. Even in simulation, the robot rarely moves exactly as commanded, causing odometry to not represent the real robot position.
+## Why making a quadruped
+The answer is easy! **To learn new stuff!**
+<br>
+I faced many challenges but I will guide you through everything. 
 
-# Tutorial (🚧 work in progress 🚧):
+# Installation
+```
+cd ~/ros2_ws/src
+git clone https://github.com/joschmaCYU/quadruped/
+cd quadruped/docker
+bash build.sh
+```
+# Usage
+You can either use the GUI:
+```
+python3 src/quadruped_basics/dashboard.py
+```
+Or you can use the terminal
+## For sim
+```
+ros2 launch quadruped sim.launch.py
+```
+## For the real robot
+```
+ros2 launch quadruped display.launch.py
+```
+
+# Tutorial -your turn to build (🚧 work in progress 🚧):
 Follow these steps to build your own quadruped !
 
 ### 0 - What will my robot do ?
@@ -20,7 +44,9 @@ For me, I want my robot to autonomously navigate a semi-controlled environement.
 Now that you have defined your goals you need to pick your parts.
 - Compute: Raspberry Pi 5 (Main ROS 2 brain) and ESP32 (Servo controller)
 - Actuators: 8x MG90S Micro Servos
-- Sensors: 2D LiDAR (for SLAM/Navigation)
+- Sensors: 2D LiDAR (for SLAM/Navigation) and an IMU
+> [!WARNING]
+> You should really use an IMU else the odometry will be very difficult to work with
 
 For more details see [parts](https://github.com/joschmaCYU/quadruped/blob/main/PartsREADME.md)
 
@@ -198,10 +224,10 @@ You can find a tutorial to do so [here](https://github.com/MOGI-ROS/Week-3-4-Gaz
 
 #### 3.2 - Making the robot move
 To make the robot move we will use inverse kinematics and then use 3d IK to move over obstacles.<br>
-If you don't want this I am sure you can find some pre-built frameworks like ros2_control walking plugins to do the job for you but here we will create our own !
+If you don't want to build this I am sure you can find some pre-built frameworks like ros2_control walking plugins to do the job for you but here we will create our own !
 
-1) The upper leg (L1​) is permanently sticking straight out horizontally.
-2) The knee joint tilts the lower leg (L2​) outward to control the robot's height.
+1) The upper leg (L1) is permanently sticking straight out horizontally.
+2) The knee joint tilts the lower leg (L2) outward to control the robot's height.
 3) The shoulder joint acts as a "Yaw" hinge, sweeping the entire leg forward and backward like a door to control the stride.
 (sketch how the robot will move to explain the math)
 
@@ -262,20 +288,33 @@ The math isn't very advanced but you need to take your time to assimilate it
 
 #### 3.4 - Odom
 ```
-        speed_multiplier = 0.08247
-        turn_multiplier = 0.6
+        speed_multiplier = xx
+        turn_multiplier = xx
 
         self.odom_yaw += (self.cmd_w * turn_multiplier) * self.dt
         self.odom_yaw = math.atan2(math.sin(self.odom_yaw), math.cos(self.odom_yaw))
         self.odom_x += (self.cmd_x * speed_multiplier * math.cos(self.odom_yaw)) * self.dt
         self.odom_y += (self.cmd_x * speed_multiplier * math.sin(self.odom_yaw)) * self.dt
 ```
+The you just have to publish it to /odom
+<br>
+One of the many chalenges of making a walking robot is friction and foot slippage. Even in simulation, the robot rarely moves exactly as commanded, causing odometry to not represent the real robot position. To compensate it we will use our IMU in combination of our speed_multiplier
 
+#### Teleoperation
+Now that you implemented everything to make the robot let's make it move!
+You will have to launch gz-sim make your urdf spawn
+```ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p use_sim_time:=true```
+Summary of ros2 topics (for sim):
 
 ### 4 - Navigation
 #### 4.1 - AMCL
 #### 4.2 - SLAM
-Summary of our ros2 topics:
+
+### 5 - Bulding the robot
+### 6 - Sim to life
+We will be using Micro-ROS to connect our raspberry pi to our esp32. So our esp can send and read topics!
+
+Summary of our ros2 topics when running the real robot:
 ```mermaid
 graph TD
     %% Define Styles
@@ -332,8 +371,6 @@ graph TD
     RSP -.->|"/tf_static (Body Links)"| NAV2
     TF_STATIC -.->|"/tf_static (base_laser)"| NAV2
 ```
-### 5 - Bulding the robot
-### 6 - Sim to life
 
 <details>
 <summary>FAQ</summary>
