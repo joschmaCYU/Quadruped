@@ -1,5 +1,5 @@
 # YMA Quadruped ROS2
-<img width="3168" height="1344" alt="Gemini_Generated_Image_kb07otkb07otkb07(1)" src="https://github.com/user-attachments/assets/f11c50d4-d10c-43d1-bcbc-4ad49c8e47e8" />
+<img width="3168" height="1344" alt="Gemini_Generated_Image_kb07otkb07otkb07(2)" src="https://github.com/user-attachments/assets/939afc75-5fc8-49e8-b7fd-eb651436626a" />
 <br>
 
 This repo is for my quadruped robot (code, 3D files, etc.). <br>
@@ -62,7 +62,8 @@ To sens the world I choose a 2D lidar (for SLAM/Navigation). This will mesure ho
 The power side is much more strait forward. If you want to move multiple servos at the same time your boards will not provide sufficiant power you will need a battery. I choose a small 2200mAh LiPo Battery. The servos need 5v to operate you need to make sure to provide these 5v to much and your servo will burn and to little they will not move. So you will need a 5V/6A UBEC which regulates the voltage and has a max current of 6A
 > [!WARNING]
 > If your servo use more then 6A be sure to take a more powerfull UBEC
-<br>
+
+
 And the rasp needs also 5V but will not pull more then 3A so I took a 5V/3A UBEC for it!
 
 Sketch of my electronic:
@@ -123,7 +124,7 @@ graph TD
 ```
 
 
-> [!TIPS]
+> [!TIP]
 > You can add some other sensors like: foot contact sensors, a depth camera, ToF sensors, power monitoring
 
 With all of that in mind we can begging with
@@ -138,26 +139,29 @@ For more help see [print](https://github.com/joschmaCYU/quadruped/blob/main/Prin
 So you want to design your robot, I have a few tips for you.<br>
 Beggin by (and I strongly advise you to do so) take a pencil and a sheet of paper and try to draw your robot!
 
-- Sktech of my robot (TODO)
+My sketches:
+<img width="644" height="466" alt="Autre (19)" src="https://github.com/user-attachments/assets/6e8cc93c-b071-4589-9d92-290925689307" />
+<br>
 
 This will help you refine your idea. You will have to ask yourself many questions about how it will move, its height, its length, etc.<br>
 You can take inspiration from other robots! I took great inspiration of [sesame-robot](https://github.com/dorianborian/sesame-robot/tree/main).
 > [!WARNING]
 > There are multiple types of walking robots, bipedal (2 legs), qudruped, hexapod ect...
 > There are 2 general type of leg position: mammalian and reptilian.
-<br>
+
 For mammalian the legs are under the body, like a horse or a dog.<br>
 For reptilian the legs are on the side, like a spider or a crocodile (that's what I went with)
-
+<br>
 > [!TIP]
 > Because the MG90S servos are weak, the chassis must be as lightweight as possible.
-<br>
 My robot walks like a spider robot. It has 8-DOF.
 
 #### 2.2 - The design
-Now this is the part where you have to take your sketchs and make them in a CAD. Iterate as many time until you are satisfied. *No need to print it yet.*
+Now this is the part where you have to take your sketchs and make them in a CAD. Iterate as many time until you are satisfied. *No need to print it yet.*<br>
+<br>
+My cad robot:
+<img width="428" height="364" alt="Screenshot_20260508_143424" src="https://github.com/user-attachments/assets/9bc27b7e-f8cc-4328-8bc1-0c3a4d382001" />
 
-- Image of my robot in CAD (TODO)
 
 #### 2.3 - Creating my urdf file
 ##### 2.3.1 - What is an urdf file ?
@@ -180,7 +184,7 @@ graph TD
     classDef sensor fill:#c0392b,stroke:#e74c3c,stroke-width:2px,color:#fff
     classDef actuator fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
     classDef software fill:#2980b9,stroke:#3498db,stroke-width:2px,color:#fff
-
+100
     subgraph Main_Computer ["Main Computer (PC or Raspberry Pi)"]
         ROS2("ROS 2 Environment<br>(Nav2, SLAM, IK Node)"):::software
         U_Agent("Micro-ROS Agent<br>(Docker)"):::software
@@ -226,7 +230,7 @@ You can find a tutorial to do so [here](https://github.com/MOGI-ROS/Week-3-4-Gaz
 #### 3.2 - Making the robot move
 To make the robot move we will use inverse kinematics and then use 3d IK to move over obstacles.<br>
 If you don't want to build this I am sure you can find some pre-built frameworks like ros2_control walking plugins to do the job for you but here we will create our own !
-
+<br>
 1) The upper leg (L1) is permanently sticking straight out horizontally.
 2) The knee joint tilts the lower leg (L2) outward to control the robot's height.
 3) The shoulder joint acts as a "Yaw" hinge, sweeping the entire leg forward and backward like a door to control the stride.
@@ -255,7 +259,7 @@ def calculate_ik(self, x, z):
 
         return shoulder_angle, knee_angle
 ```
-The math isn't very advanced but you need to take your time to assimilate it
+The math isn't very advanced but you need to take your time to assimilate it<br>
 
 #### 3.3 - IK gait
 ```
@@ -297,12 +301,12 @@ The math isn't very advanced but you need to take your time to assimilate it
         self.odom_x += (self.cmd_x * speed_multiplier * math.cos(self.odom_yaw)) * self.dt
         self.odom_y += (self.cmd_x * speed_multiplier * math.sin(self.odom_yaw)) * self.dt
 ```
-The you just have to publish it to /odom
+The you just have to publish it to /odom<br>
 <br>
 One of the many chalenges of making a walking robot is friction and foot slippage. Even in simulation, the robot rarely moves exactly as commanded, causing odometry to not represent the real robot position. To compensate it we will use our IMU in combination of our speed_multiplier
 
 #### Teleoperation
-Now that you implemented everything to make the robot let's make it move!
+Now that you implemented everything to make the robot let's make it move!<br>
 You will have to launch gz-sim make your urdf spawn
 ```ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p use_sim_time:=true```
 Summary of ros2 topics (for sim):
@@ -313,8 +317,8 @@ Summary of ros2 topics (for sim):
 
 ### 5 - Bulding the robot
 ### 6 - Sim to life
-We will be using Micro-ROS to connect our raspberry pi to our esp32. So our esp can send and read topics!
-
+We will be using Micro-ROS to connect our raspberry pi to our esp32. So our esp can send and read topics!<br>
+<br>
 Summary of our ros2 topics when running the real robot:
 ```mermaid
 graph TD
