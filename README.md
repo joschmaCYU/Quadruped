@@ -1,5 +1,6 @@
 # YMA Quadruped ROS2
-(banner)
+<img width="3168" height="1344" alt="Gemini_Generated_Image_kb07otkb07otkb07(1)" src="https://github.com/user-attachments/assets/f11c50d4-d10c-43d1-bcbc-4ad49c8e47e8" />
+<br>
 
 This repo is for my quadruped robot (code, 3D files, etc.). <br>
 This walking robot can autonomously navigate thanks to Nav2 and SLAM. I built this with ROS 2 Jazzy, running on an ESP32 and a Raspberry Pi.<br>
