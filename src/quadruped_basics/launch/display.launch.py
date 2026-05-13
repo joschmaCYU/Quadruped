@@ -1,4 +1,5 @@
 import os
+from launch.actions import TimerAction
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess
@@ -34,7 +35,8 @@ def generate_launch_description():
         package=pkg_name,
         executable='ik_node.py',
         name='quadruped_ik_node',
-        output='screen'
+        output='screen',
+        parameters=[{'use_sim_time': False}]
     )
 
     # sudo pkill -9 micro_ros_agent
@@ -49,7 +51,7 @@ def generate_launch_description():
     # 4. Micro-ROS Agent via Docker (Sans le flag -it)
     microros_agent_process = ExecuteProcess(
         cmd=[
-            'docker', 'run', '--rm', 
+            'sudo', 'docker', 'run', '--rm', 
             '-v', '/dev:/dev', '--privileged', '--net=host', 
             'microros/micro-ros-agent:jazzy', 
             'serial', '--dev', '/dev/ttyUSB0'
@@ -92,7 +94,7 @@ def generate_launch_description():
             ]
     )
 
-     nav2_rviz_config_path = os.path.join(
+    nav2_rviz_config_path = os.path.join(
         get_package_share_directory('nav2_bringup'),
         'rviz',
         'nav2_default_view.rviz'
@@ -103,7 +105,7 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         arguments=['-d', nav2_rviz_config_path],
-        parameters=[{'use_sim_time': True}],
+        parameters=[{'use_sim_time': False}],
         output='screen'
     )
 
@@ -118,7 +120,6 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(nav2_launch_path),
         launch_arguments={
             'use_sim_time': 'false',
-            'map': '/home/ros/ros2_ws/src/quadruped_basics/maps/third_better_map.yaml',
             'params_file': '/home/ros/ros2_ws/src/quadruped_basics/config/my_nav2.yaml'
         }.items()
     )
@@ -138,7 +139,10 @@ def generate_launch_description():
         }.items()
     )
 
-
+    delayed_nav2_cmd = TimerAction(
+        period=5.0,
+        actions=[nav2_cmd]
+    )
 
     return LaunchDescription([
         rsp_node,
@@ -147,5 +151,7 @@ def generate_launch_description():
         ldlidar_node,
         base_link_to_laser_tf_node,
         kill_process,
-        microros_agent_process
+        microros_agent_process,
+        slam_toolbox_cmd,
+        delayed_nav2_cmd
     ])

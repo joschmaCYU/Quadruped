@@ -94,8 +94,8 @@ controller_server:
     general_goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.35 #0.25
-      yaw_goal_tolerance: 0.35 #
+      xy_goal_tolerance: 0.10
+      yaw_goal_tolerance: 0.10
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController" # mabe try nav2_rotation_shim_controller::RotationShimController
       time_steps: 56
@@ -200,12 +200,12 @@ local_costmap:
       width: 3
       height: 3
       resolution: 0.05
-      robot_radius: 0.15
+      robot_radius: 0.06
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
-        inflation_radius: 0.20 # 0.7
+        inflation_radius: 0.06 # 0.7
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
@@ -262,7 +262,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
-        inflation_radius: 0.2 # 0.7
+        inflation_radius: 0.1 # 0.7
       always_send_full_costmap: True
 
 # The yaml_filename does not need to be specified since it going to be set by defaults in launch.
@@ -372,7 +372,7 @@ velocity_smoother:
     max_decel: [-2.5, 0.0, -3.2]
     odom_topic: "odom"
     odom_duration: 0.1
-    deadband_velocity: [0.05, 0.0, 0.05]
+    deadband_velocity: [0.25, 0.0, 0.25] # 0.05 0 0.2
     velocity_timeout: 1.0
 
 collision_monitor:

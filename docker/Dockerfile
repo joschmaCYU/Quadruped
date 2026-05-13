@@ -81,9 +81,6 @@ RUN cd /home/$USERNAME/ros2_ws/src/ && \
         sed -i 's|//#include <pthread.h>|#include <pthread.h>|g' ldlidar_stl_ros2/ldlidar_driver/include/logger/log_module.h; \
     fi
 
-# Permissions to use micro-ros-agent
-RUN sudo chmod 666 /var/run/docker.sock
-
 # 5. Switch to User to install dependencies and build
 USER $USERNAME
 

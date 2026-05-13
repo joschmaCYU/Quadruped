@@ -43,8 +43,9 @@ RESET esp32
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p use_sim_time:=true
 
 ## If robot not connecting :
-1) ros2 daemon stop && ros2 daemon start && ros2 topic list
-2) sudo fuser -v /dev/ttyUSB0 && sudo killall -9 micro_ros_agent
+ros2 daemon stop && ros2 daemon start && ros2 topic list
+sudo pkill -9 ros2
+sudo fuser -v /dev/ttyUSB0 && sudo pkill -9 micro_ros_agent
 
 # Launch sim + robot brain
 ros2 launch quadruped_basics sim.launch.py
