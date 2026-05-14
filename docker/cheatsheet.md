@@ -43,6 +43,7 @@ RESET esp32
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p use_sim_time:=true
 
 ## If robot not connecting :
+ros2 topic info /imu --verbose
 ros2 daemon stop && ros2 daemon start && ros2 topic list
 sudo pkill -9 ros2
 sudo fuser -v /dev/ttyUSB0 && sudo pkill -9 micro_ros_agent

@@ -6,6 +6,7 @@ from geometry_msgs.msg import Twist, TransformStamped
 from tf2_ros import TransformBroadcaster
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
+from rclpy.qos import qos_profile_sensor_data
 import math
 
 
@@ -26,7 +27,9 @@ class GazeboQuadrupedNode(Node):
             Bool, "/dashboard_override", self.override_callback, 10
         )
 
-        self.imu_sub = self.create_subscription(Imu, "/imu", self.imu_callback, 10)
+        self.imu_sub = self.create_subscription(
+            Imu, "/imu", self.imu_callback, qos_profile_sensor_data
+        )
 
         self.tf_broadcaster = TransformBroadcaster(self)
         self.odom_x = 0.0
