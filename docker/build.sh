@@ -3,26 +3,47 @@
 # Get the absolute path of the directory containing this script (docker directory)
 SCRIPT_PATH=$(dirname $(realpath "$0"))
 
-# Get the parent directory path (quadruped directory)
+# Get the parent directory path (mycobot_ros2 directory)
 # This is where our actual ROS 2 package code lives
 PARENT_PATH=$(dirname "$SCRIPT_PATH")
+
+check_and_install_docker()
+{
+    if ! command -v docker &> /dev/null; then
+        LOG="Docker is not installed. Downloading and installing Docker..."
+        print_debug
+        
+        # Download and run the official Docker convenience installation script
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sudo sh get-docker.sh
+        
+        # Clean up the installation script
+        rm get-docker.sh
+        
+        LOG="Docker installation complete!"
+        print_debug
+    else
+        LOG="Docker is already installed. Proceeding..."
+        print_debug
+    fi
+}
 
 # Function to build the Docker image
 # This function handles the actual Docker build process
 build_docker_image()
 {
     # Set a log message for the build process
-    LOG="Building Docker image quadruped:latest ..."
+    LOG="Building Docker image manipulation:latest ..."
 
     # Print the log message using our debug function
     print_debug
 
     # Build the Docker image
     # -f $SCRIPT_PATH/Dockerfile: Specify the path to the Dockerfile in the docker directory
-    # -t quadruped:latest: Tag the image as manipulation:latest
+    # -t manipulation:latest: Tag the image as manipulation:latest
     # $PARENT_PATH: Use the parent directory as the build context, allowing access to all package files
     # --no-cache: Build the image without using the cache, ensuring fresh dependencies
-    sudo docker image build -f $SCRIPT_PATH/Dockerfile -t quadruped:latest $PARENT_PATH --no-cache
+    sudo docker image build -f $SCRIPT_PATH/Dockerfile -t manipulation:latest $PARENT_PATH --no-cache
 }
 
 # Function to create a shared folder
@@ -30,16 +51,16 @@ build_docker_image()
 create_shared_folder()
 {
     # Check if the directory doesn't exist
-    if [ ! -d "$HOME/josch/shared/ros2" ]; then
+    if [ ! -d "$HOME/automaticaddison/shared/ros2" ]; then
         # Set a log message for folder creation
-        LOG="Creating $HOME/josch/shared/ros2 ..."
+        LOG="Creating $HOME/automaticaddison/shared/ros2 ..."
 
         # Print the log message
         print_debug
 
         # Create the directory and its parent directories if they don't exist
         # -p flag creates parent directories as needed
-        mkdir -p $HOME/josch/shared/ros2
+        mkdir -p $HOME/automaticaddison/shared/ros2
     fi
 }
 

@@ -17,9 +17,12 @@ bash build.sh
 ## Remove it 
 docker rmi quadruped:latest
 
-# For freecad :
+## For freecad :
 conda activate freecad_1_0_312 && freecad
 conda deactivate
+
+## SSH 
+ssh josch@192.168.1.46
 
 Pair A (These legs move together):
     Front Left Shoulder: Pin 13
@@ -31,7 +34,7 @@ Pair B (These legs move together):
     Front Right Shoulder: Pin 17
     Front Right Knee: Pin 18
     Back Left Shoulder: Pin 19
-    Back Left Knee: Pin 21
+    Back Left Knee: Pin 23
 
 
 ros2 run quadruped_basics dashboard.py
