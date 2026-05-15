@@ -42,8 +42,9 @@ The first question you have to ask your self and the most important one is: *wha
 For me, I want my robot to autonomously navigate a semi-controlled environement.
 
 ### 1 - Parts
-Now that you have defined your goals you need to pick your parts.
-- Compute: Raspberry Pi 5 (Main ROS 2 brain) and ESP32 (Servo controller)
+Now that you have defined your goals you need to pick your parts.<br>
+I choose:
+- Compute: Raspberry Pi 4 (Main ROS 2 brain) and ESP32 (Servo controller)
 - Actuators: 8x MG90S Micro Servos
 - Sensors: 2D LiDAR (for SLAM/Navigation) and an IMU
 > [!WARNING]
@@ -56,56 +57,13 @@ Now that you know what we have to fit in our robot lets design it. Use your favo
 For more help see [print](https://github.com/joschmaCYU/quadruped/blob/main/PrintREADME.md)
 
 ### 3 - Simulating the robot and let's use ROS
-The robot runs on ROS 2 Jazzy, handling the communication between the sensors, the Pi, and the ESP32. [Let's bring your robot to sim](https://github.com/joschmaCYU/quadruped/blob/main/SimREADME.md)<br>
-This is how it will work:
-<details>
-<summary>Click to view my electronic diagram</summary>
-
-```mermaid
-graph TD
-    %% Define Styles
-    classDef pc fill:#2c3e50,stroke:#34495e,stroke-width:2px,color:#ecf0f1
-    classDef esp fill:#27ae60,stroke:#2ecc71,stroke-width:2px,color:#fff
-    classDef sensor fill:#c0392b,stroke:#e74c3c,stroke-width:2px,color:#fff
-    classDef actuator fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
-    classDef software fill:#2980b9,stroke:#3498db,stroke-width:2px,color:#fff
-    subgraph Main_Computer ["Main Computer (PC or Raspberry Pi)"]
-        ROS2("ROS 2 Environment<br>(Nav2, SLAM, IK Node)"):::software
-        U_Agent("Micro-ROS Agent<br>(Docker)"):::software
-        L_Node("LD19 LiDAR Node"):::software
-
-        ROS2 <-->|"ROS 2 Topics<br>(/cmd_vel, /odom)"| U_Agent
-        L_Node -->|"ROS 2 Topic<br>(/scan)"| ROS2
-    end
-
-    subgraph Microcontroller ["Microcontroller"]
-        ESP32("ESP32<br>(Micro-ROS Client)"):::esp
-    end
-
-    subgraph Peripherals ["Sensors & Actuators"]
-        LD19("LD19 LiDAR"):::sensor
-        IMU("BNO085 IMU"):::sensor
-        Servos("8x Quadruped Servos<br>(Legs)"):::actuator
-    end
-
-    %% Hardware Connections
-    U_Agent <-->|"USB Cable<br>(/dev/ttyUSB0)"| ESP32
-    L_Node <-->|"USB Cable<br>(/dev/ttyUSB1)"| LD19
-
-    ESP32 <-->|"I2C (SDA, SCL, 3.3V, GND)"| IMU
-    ESP32 -->|"PWM / Servo Control Board"| Servos
-
-    %% Apply Styles
-    class Main_Computer pc
-    class Microcontroller esp
-    class Peripherals pc
-```
-
-</details>
+Now that you have your urdf file we can simulate it!<br>
+The robot runs on ROS 2 Jazzy. It handles the communication between the sensors, actuators, the Pi, and the ESP32. <br> 
+[Let's bring your robot to sim](https://github.com/joschmaCYU/quadruped/blob/main/SimREADME.md)<br>
 
 #### Teleoperation
 Now that you implemented everything to make the robot let's make it move!<br>
-You will have to launch gz-sim make your urdf spawn <br>
+You will have to [launch gz-sim and run the urdf spawn script](https://gazebosim.org/docs/latest/spawn_urdf/)<br>
 ```ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p use_sim_time:=true```
 <br>
 <details>
@@ -161,8 +119,10 @@ graph TD
 </details>
     
 ### 4 - Navigation
-#### 4.1 - AMCL
-#### 4.2 - SLAM
+For this we will need to use gz-sim in combination with either AMCL and SLAM
+#### 4.1 - SLAM
+This will be used to create the map
+#### 4.2 - AMCL
 
 ### 5 - Bulding the robot
 ### 6 - Sim to life

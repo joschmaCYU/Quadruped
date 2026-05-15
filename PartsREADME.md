@@ -1,18 +1,22 @@
 ### 1 - Parts
-As stated before we will be using ROS 2 but it needs power to run ! Thats why you will need something powerfull like a raspberry pi 5. To communicate with the servos and other actuators I choose an ESP32. You could plug everything but the rasp has only 4 PWM pins and you can't just plug the servos to any GPIO pins else they will not act as you want.<br>
+As stated before we will be using ROS 2 but it needs power to run ! Thats why you will need something powerfull like a raspberry pi.<br>
+To communicate with the servos and other actuators I choose an ESP32. You could plug everything but the rasp has only 4 PWM pins and you can't just plug the servos to any GPIO pins else they will not act as you want.<br>
 To sens the world I choose a 2D lidar (for SLAM/Navigation). This will mesure how far away the obstacles are.
 
 > [!TIP]
 > You don't need to place the lidar low to the ground because you will be able to move your legs up, so even if the lidar doesn't detect the obstacle your robot will still be able to pass over it.
 
-The power side is much more strait forward. If you want to move multiple servos at the same time your boards will not provide sufficiant power you will need a battery. I choose a small 2200mAh LiPo Battery. The servos need 5v to operate you need to make sure to provide these 5v to much and your servo will burn and to little they will not move. So you will need a 5V/6A UBEC which regulates the voltage and has a max current of 6A
+The power side is not more complicated. If you want to move multiple servos at the same time your boards will not provide sufficiant power you will need a battery. <br>
+I chose a small 2200mAh LiPo Battery with 3 cells that will produce 11.1V. But the servos need 5v to operate, so you need to make sure to provide exaclty these 5v else your servo will not function very well. So you will need a 5V/6A UBEC which regulates the voltage. Why 6A ? Because each mg90s uses a max of 750mA * 8 = 6000mA at 5V.
 > [!WARNING]
+> You should always use a more powerfull device to not burn it
 > If your servo use more then 6A be sure to take a more powerfull UBEC
 
+We need to not forget the rasperry pi which needs also 5V but will not pull more then 3A so I took a 5V/3A UBEC for it!
 
-And the rasp needs also 5V but will not pull more then 3A so I took a 5V/3A UBEC for it!
+<details>
+<summary>Sketch of my electronic:</summary>
 
-Sketch of my electronic:
 ```mermaid
 graph TD
     %% Define Styles
@@ -69,6 +73,7 @@ graph TD
     ESP32 ===|"8x PWM Signal Wires"| SERVOS
 ```
 
+</details>
 
 > [!TIP]
 > You can add some other sensors like: foot contact sensors, a depth camera, ToF sensors, power monitoring

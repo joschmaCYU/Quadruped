@@ -1,5 +1,8 @@
 ARG ROS_DISTRO=jazzy
-FROM osrf/ros:${ROS_DISTRO}-desktop
+# For a real computer :
+# FROM osrf/ros:${ROS_DISTRO}-desktop
+# For raspberry :
+FROM ros:${ROS_DISTRO}-ros-base
 
 # Disable interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive

@@ -166,7 +166,6 @@ class GazeboQuadrupedNode(Node):
         odom_msg.pose.pose.position.y = self.odom_y
         odom_msg.pose.pose.orientation = t.transform.rotation
 
-        # Give Nav2 the PURE speed, ignoring trim
         odom_msg.twist.twist.linear.x = self.cmd_x * self.speed_multiplier
         odom_msg.twist.twist.angular.z = getattr(self, "actual_turn_speed", 0.0)
 
