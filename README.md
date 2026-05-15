@@ -294,12 +294,13 @@ The math isn't very advanced but you need to take your time to assimilate it<br>
 #### 3.4 - Odom
 ```
         speed_multiplier = xx
-        turn_multiplier = xx
 
-        self.odom_yaw += (self.cmd_w * turn_multiplier) * self.dt
-        self.odom_yaw = math.atan2(math.sin(self.odom_yaw), math.cos(self.odom_yaw))
-        self.odom_x += (self.cmd_x * speed_multiplier * math.cos(self.odom_yaw)) * self.dt
-        self.odom_y += (self.cmd_x * speed_multiplier * math.sin(self.odom_yaw)) * self.dt
+        self.odom_x += (
+            self.cmd_x * self.speed_multiplier * math.cos(self.odom_yaw)
+        ) * self.dt
+        self.odom_y += (
+            self.cmd_x * self.speed_multiplier * math.sin(self.odom_yaw)
+        ) * self.dt
 ```
 The you just have to publish it to /odom<br>
 <br>
