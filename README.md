@@ -58,6 +58,9 @@ For more help see [print](https://github.com/joschmaCYU/quadruped/blob/main/Prin
 ### 3 - Simulating the robot and let's use ROS
 The robot runs on ROS 2 Jazzy, handling the communication between the sensors, the Pi, and the ESP32. [Let's bring your robot to sim](https://github.com/joschmaCYU/quadruped/blob/main/SimREADME.md)<br>
 This is how it will work:
+<details>
+<summary>Click to view my electronic diagram</summary>
+
 ```mermaid
 graph TD
     %% Define Styles
@@ -97,12 +100,17 @@ graph TD
     class Microcontroller esp
     class Peripherals pc
 ```
+
+</details>
+
 #### Teleoperation
 Now that you implemented everything to make the robot let's make it move!<br>
 You will have to launch gz-sim make your urdf spawn <br>
 ```ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p use_sim_time:=true```
 <br>
-Summary of ros2 topics (for sim):
+<details>
+<summary>Click to view the summary of ros2 topics (for sim):</summary>
+    
 ```mermaid
 graph TD
     %% Define Styles
@@ -150,6 +158,8 @@ graph TD
     RSP -.->|" /tf_static (Body Links)"| RVIZ
 ```
 
+</details>
+    
 ### 4 - Navigation
 #### 4.1 - AMCL
 #### 4.2 - SLAM
@@ -158,7 +168,9 @@ graph TD
 ### 6 - Sim to life
 We will be using Micro-ROS to connect our raspberry pi to our esp32. So our esp can send and read topics!<br>
 <br>
-Summary of our ros2 topics when running the real robot:
+<details>
+<summary>Click to view the summary of our ros2 topics when running the real robot</summary>
+    
 ```mermaid
 graph TD
     %% Define Styles
@@ -215,6 +227,8 @@ graph TD
     RSP -.->|"/tf_static (Body Links)"| NAV2
     TF_STATIC -.->|"/tf_static (base_laser)"| NAV2
 ```
+
+</details>
 
 <details>
 <summary>FAQ</summary>
