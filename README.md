@@ -51,128 +51,10 @@ Now that you have defined your goals you need to pick your parts.
 
 For more details see [parts](https://github.com/joschmaCYU/quadruped/blob/main/PartsREADME.md)
 
-(PartsREADME.md)
-### 1 - Parts
-As stated before we will be using ROS 2 but it needs power to run ! Thats why you will need something powerfull like a raspberry pi 5. To communicate with the servos and other actuators I choose an ESP32. You could plug everything but the rasp has only 4 PWM pins and you can't just plug the servos to any GPIO pins else they will not act as you want.<br>
-To sens the world I choose a 2D lidar (for SLAM/Navigation). This will mesure how far away the obstacles are.
-
-> [!TIP]
-> You don't need to place the lidar low to the ground because you will be able to move your legs up, so even if the lidar doesn't detect the obstacle your robot will still be able to pass over it.
-
-The power side is much more strait forward. If you want to move multiple servos at the same time your boards will not provide sufficiant power you will need a battery. I choose a small 2200mAh LiPo Battery. The servos need 5v to operate you need to make sure to provide these 5v to much and your servo will burn and to little they will not move. So you will need a 5V/6A UBEC which regulates the voltage and has a max current of 6A
-> [!WARNING]
-> If your servo use more then 6A be sure to take a more powerfull UBEC
-
-
-And the rasp needs also 5V but will not pull more then 3A so I took a 5V/3A UBEC for it!
-
-Sketch of my electronic:
-```mermaid
-graph TD
-    %% Define Styles
-    classDef power fill:#c0392b,stroke:#e74c3c,stroke-width:2px,color:#fff
-    classDef compute fill:#2c3e50,stroke:#34495e,stroke-width:2px,color:#ecf0f1
-    classDef sensor fill:#8e44ad,stroke:#9b59b6,stroke-width:2px,color:#fff
-    classDef motor fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
-
-    subgraph Power_Distribution ["Power Sources & Regulators"]
-        BATT("LiPo Battery<br>(3S 11.1V)"):::power
-        UBEC_ESP("Brain UBEC<br>(5V 3A)"):::power
-        UBEC_SRV("Motor UBEC<br>(5V 6A)"):::power
-    end
-
-    subgraph Computing ["Logic & Processing"]
-        PC("Main PC / Raspberry Pi"):::compute
-        ESP32("ESP32 (VIN Pin)"):::compute
-    end
-
-    subgraph Peripherals ["Sensors & Actuators"]
-        SERVOS("8x Servos<br>(V+, GND, Signal)"):::motor
-        IMU("BNO085 IMU"):::sensor
-        LD19("LD19 LiDAR<br>(via CP2102 USB board)"):::sensor
-    end
-
-    %% --- POWER ROUTING (Solid Lines) ---
-    BATT -->|"Raw Battery Voltage (+)"| UBEC_ESP
-    BATT -->|"Raw Battery Voltage (+)"| UBEC_SRV
-
-    UBEC_ESP -->|"5V (+)"| PC
-    UBEC_SRV -->|"Servo Voltage (5V)"| SERVOS
-
-    ESP32 -->|"3.3V Out (+)"| IMU
-    PC -->|"USB 5V (+)"| LD19
-
-    %% --- GROUND ROUTING (Dotted Lines) ---
-    BATT -.->|"GND (-)"| UBEC_ESP
-    BATT -.->|"GND (-)"| UBEC_SRV
-    UBEC_ESP -.->|"GND"| PC
-    UBEC_SRV -.->|"GND"| SERVOS
-    ESP32 -.->|"GND"| IMU
-
-    %% CRITICAL: Common Ground Tie
-    ESP32 -.->|"CRITICAL: Common GND Tie"| UBEC_SRV
-
-    %% --- DATA ROUTING (Thick Lines) ---
-    PC -->|"USB 5V (+)"| ESP32
-    PC ===|"USB Data (ttyUSB0)"| ESP32
-    PC ===|"USB Data (ttyUSB1)"| LD19
-
-    ESP32 ===|"I2C SDA (e.g., GPIO 21)"| IMU
-    ESP32 ===|"I2C SCL (e.g., GPIO 22)"| IMU
-
-    ESP32 ===|"8x PWM Signal Wires"| SERVOS
-```
-
-
-> [!TIP]
-> You can add some other sensors like: foot contact sensors, a depth camera, ToF sensors, power monitoring
-
-With all of that in mind we can begging with
 ### 2 - Print & Assemble
 Now that you know what we have to fit in our robot lets design it. Use your favorite CAD software and create your URDF file.<br>
 For more help see [print](https://github.com/joschmaCYU/quadruped/blob/main/PrintREADME.md)
 
-(PrintREADME)
-### 2 - Bringing it to your computer
-
-#### 2.1 - Getting the idea
-So you want to design your robot, I have a few tips for you.<br>
-Beggin by (and I strongly advise you to do so) take a pencil and a sheet of paper and try to draw your robot!
-
-My sketches:
-<img width="644" height="466" alt="Autre (19)" src="https://github.com/user-attachments/assets/6e8cc93c-b071-4589-9d92-290925689307" />
-<br>
-
-This will help you refine your idea. You will have to ask yourself many questions about how it will move, its height, its length, etc.<br>
-You can take inspiration from other robots! I took great inspiration of [sesame-robot](https://github.com/dorianborian/sesame-robot/tree/main).
-> [!WARNING]
-> There are multiple types of walking robots, bipedal (2 legs), qudruped, hexapod ect...
-> There are 2 general type of leg position: mammalian and reptilian.
-
-For mammalian the legs are under the body, like a horse or a dog.<br>
-For reptilian the legs are on the side, like a spider or a crocodile (that's what I went with)
-<br>
-> [!TIP]
-> Because the MG90S servos are weak, the chassis must be as lightweight as possible.
-My robot walks like a spider robot. It has 8-DOF.
-
-#### 2.2 - The design
-Now this is the part where you have to take your sketchs and make them in a CAD. Iterate as many time until you are satisfied. *No need to print it yet.*<br>
-<br>
-My cad robot:
-<img width="428" height="364" alt="Screenshot_20260508_143424" src="https://github.com/user-attachments/assets/9bc27b7e-f8cc-4328-8bc1-0c3a4d382001" />
-
-
-#### 2.3 - Creating my urdf file
-##### 2.3.1 - What is an urdf file ?
-It's simple! It's a file that describes your robot. This file will be used by your simulation software to make the robot move. Rather then having just a fixed 3d the urdf file specifies how parts move/rotate along side each other.
-##### 2.3.2 - How to make it
-Either you rebuild your robot in an urdf software like [D-Robotics](https://urdf.d-robotics.cc) or [Lever Robotics](https://lever-robotics.github.io/URDF_creator/). This can be done quick and dirty but can be less precise.<br>
-Or you use your newly modeled robot to genereate it. [Here](https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/Exporting-an-URDF-File.html) is a tutorial for ROS on how to export your CAD file to an URDF file.
-> [!TIP]
-> You will have to specifyl how each part move/rotates this can be tidius but you will have the exact replicate of your robot in the sim !
-
-Speaking of which :
 ### 3 - Simulating the robot and let's use ROS
 The robot runs on ROS 2 Jazzy, handling the communication between the sensors, the Pi, and the ESP32. [Let's bring your robot to sim](https://github.com/joschmaCYU/quadruped/blob/main/SimREADME.md)<br>
 This is how it will work:
@@ -184,7 +66,6 @@ graph TD
     classDef sensor fill:#c0392b,stroke:#e74c3c,stroke-width:2px,color:#fff
     classDef actuator fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
     classDef software fill:#2980b9,stroke:#3498db,stroke-width:2px,color:#fff
-100
     subgraph Main_Computer ["Main Computer (PC or Raspberry Pi)"]
         ROS2("ROS 2 Environment<br>(Nav2, SLAM, IK Node)"):::software
         U_Agent("Micro-ROS Agent<br>(Docker)"):::software
@@ -216,101 +97,58 @@ graph TD
     class Microcontroller esp
     class Peripherals pc
 ```
-
-
-(https://github.com/joschmaCYU/quadruped/blob/main/SimREADME.md)
-### 3 - Simulating the robot
-#### 3.1 - What is ROS and what will we be using ROS for ?
-The most simple explanation I can give is : ROS is like whatsapp a messaging app but the messages are information. We will be using ROS to benefit from it's great echo system (simulators, autonomus navigation, mapping...).
-> [!TIP]
-> If you have never used ROS you should begging with getting familiar to it with [tutorials](https://docs.ros.org/en/jazzy/Tutorials.html) !
-#### 3.2 - Set up urdf + sim
-You can find a tutorial to do so [here](https://github.com/MOGI-ROS/Week-3-4-Gazebo-basics). I will not detail this part which is outside of this tutorial scope.
-
-#### 3.2 - Making the robot move
-To make the robot move we will use inverse kinematics and then use 3d IK to move over obstacles.<br>
-If you don't want to build this I am sure you can find some pre-built frameworks like ros2_control walking plugins to do the job for you but here we will create our own !
-<br>
-1) The upper leg (L1) is permanently sticking straight out horizontally.
-2) The knee joint tilts the lower leg (L2) outward to control the robot's height.
-3) The shoulder joint acts as a "Yaw" hinge, sweeping the entire leg forward and backward like a door to control the stride.
-(sketch how the robot will move to explain the math)
-
-```
-def calculate_ik(self, x, z):
-        # 1. Physical Leg Lengths
-        L1 = 0.206  # length of upper leg
-        L2 = 0.250  # length of lower leg
-
-        # 3. KNEE MATH (Controls Height)
-        # Because your URDF draws the calf pointing straight down when angle is 0. A larger angle bends it outwards.
-        cos_knee = abs(z) / L2
-        cos_knee = max(0.0, min(1.0, cos_knee))
-        knee_angle = math.acos(cos_knee)
-
-        # 4. SHOULDER MATH (Controls Forward Stride)
-        # Calculate how far out the foot currently is due to the knee bend
-        horizontal_reach = L1 + (L2 * math.sin(knee_angle))
-
-        # Calculate the sweep angle required to move 'x' meters forward
-        step_reach = x / horizontal_reach
-        step_reach = max(-1.0, min(1.0, step_reach))
-        shoulder_angle = math.asin(step_reach)
-
-        return shoulder_angle, knee_angle
-```
-The math isn't very advanced but you need to take your time to assimilate it<br>
-
-#### 3.3 - IK gait
-```
- def get_ik_gait(self, t, phase_offset, step_scale):
-        T = 0.80
-        duty_factor = 0.60
-        cycle_progress = ((t / T) + phase_offset) % 1.0
-
-        # --- SPIDER GAIT SETTINGS ---
-        stride_length = 0.25  # 15cm max steps
-        step_height = 0.08    # Lift foot 8cm into the air
-        stand_height = -0.25  # Keep the hip 20cm off the floor (Safe for L2=25cm)
-
-        if cycle_progress < duty_factor:
-            # STANCE PHASE
-            stance_p = cycle_progress / duty_factor
-            target_x = (stride_length / 2.0) - (stride_length * stance_p)
-            target_z = stand_height
-        else:
-            # SWING PHASE
-            swing_p = (cycle_progress - duty_factor) / (1.0 - duty_factor)
-            target_x = -(stride_length / 2.0) + (stride_length * swing_p)
-            target_z = stand_height + (step_height * math.sin(swing_p * math.pi))
-
-        # SCALE THE PHYSICAL STEP (Not the joint angle!)
-        target_x = target_x * step_scale
-
-        return self.calculate_ik(target_x, target_z)
-
-```
-
-#### 3.4 - Odom
-```
-        speed_multiplier = xx
-
-        self.odom_x += (
-            self.cmd_x * self.speed_multiplier * math.cos(self.odom_yaw)
-        ) * self.dt
-        self.odom_y += (
-            self.cmd_x * self.speed_multiplier * math.sin(self.odom_yaw)
-        ) * self.dt
-```
-The you just have to publish it to /odom<br>
-<br>
-One of the many chalenges of making a walking robot is friction and foot slippage. Even in simulation, the robot rarely moves exactly as commanded, causing odometry to not represent the real robot position. To compensate it we will use our IMU in combination of our speed_multiplier
-
 #### Teleoperation
 Now that you implemented everything to make the robot let's make it move!<br>
-You will have to launch gz-sim make your urdf spawn
+You will have to launch gz-sim make your urdf spawn <br>
 ```ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p use_sim_time:=true```
+<br>
 Summary of ros2 topics (for sim):
+```mermaid
+graph TD
+    %% Define Styles
+    classDef input fill:#27ae60,stroke:#2ecc71,stroke-width:2px,color:#fff
+    classDef core fill:#8e44ad,stroke:#9b59b6,stroke-width:2px,color:#fff
+    classDef sim fill:#d35400,stroke:#e67e22,stroke-width:2px,color:#fff
+    classDef viz fill:#2980b9,stroke:#3498db,stroke-width:2px,color:#fff
+
+    subgraph User_Input ["User Control"]
+        TELEOP("teleop_twist_keyboard<br>(or Joystick)"):::input
+    end
+
+    subgraph ROS2_Logic ["ROS 2 Brain"]
+        IK_NODE("ik_node.py<br>(Quadruped Kinematics)"):::core
+        RSP("robot_state_publisher<br>(URDF Parsing)"):::core
+    end
+
+    subgraph Simulation ["Gazebo Physics Engine"]
+        BRIDGE("ros_gz_bridge<br>(Sensor Translator)"):::sim
+        R2C("ros2_control<br>(Virtual Servos)"):::sim
+    end
+
+    subgraph Mapping_and_Viz ["Mapping & Visualization"]
+        SLAM("SLAM Toolbox"):::viz
+        RVIZ("RViz 2"):::viz
+    end
+
+    %% --- COMMAND FLOW (How it moves) ---
+    TELEOP -->|" /cmd_vel (Twist)"| IK_NODE
+    IK_NODE -->|" /joint_group_position_controller/commands"| R2C
+    
+    %% --- SENSOR FLOW (How it sees/feels) ---
+    BRIDGE -->|" /imu (Imu)"| IK_NODE
+    BRIDGE -->|" /scan (LaserScan)"| SLAM
+    BRIDGE -->|" /scan (LaserScan)"| RVIZ
+    
+    %% --- ODOMETRY & MAPPING FLOW ---
+    IK_NODE -->|" /odom (Odometry)"| SLAM
+    IK_NODE -->|" /odom (Odometry)"| RVIZ
+    SLAM -->|" /map (OccupancyGrid)"| RVIZ
+
+    %% --- TF TREE (Coordinate Math - Dotted Lines) ---
+    SLAM -.->|" /tf (map -> odom)"| RVIZ
+    IK_NODE -.->|" /tf (odom -> base_footprint)"| RVIZ
+    RSP -.->|" /tf_static (Body Links)"| RVIZ
+```
 
 ### 4 - Navigation
 #### 4.1 - AMCL
