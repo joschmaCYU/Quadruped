@@ -1,20 +1,26 @@
 ARG ROS_DISTRO=jazzy
-# For a real computer :
-# FROM osrf/ros:${ROS_DISTRO}-desktop
-# For raspberry :
-FROM ros:${ROS_DISTRO}-ros-base
+
+# Tells Docker to expose the architecture variable
+ARG TARGETARCH
+
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        FROM osrf/ros:${ROS_DISTRO}-desktop
+    else \
+        FROM ros:${ROS_DISTRO}-ros-base
+    fi
 
 # Disable interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
-# 1. Install Basic Tools
+
+
+# 1. Install Essential Core Tools (For BOTH PC and Raspberry Pi)
 RUN apt-get update -q && \
     apt-get install -yq --no-install-recommends \
     tree \
     build-essential \
     git \
-    docker.io \
     wget \
     curl \
     nano \
@@ -27,8 +33,6 @@ RUN apt-get update -q && \
     python3-colcon-common-extensions \
     python3-vcstool \
     software-properties-common \
-    ros-${ROS_DISTRO}-ros-gz \
-    ros-${ROS_DISTRO}-gz-ros2-control \
     ros-${ROS_DISTRO}-ros2-control \
     ros-${ROS_DISTRO}-ros2-controllers \
     ros-${ROS_DISTRO}-teleop-twist-keyboard \
@@ -36,11 +40,19 @@ RUN apt-get update -q && \
     ros-${ROS_DISTRO}-slam-toolbox \
     ros-${ROS_DISTRO}-navigation2 \
     ros-${ROS_DISTRO}-nav2-bringup \
-    ros-${ROS_DISTRO}-navigation2 \
-    ros-${ROS_DISTRO}-nav2-bringup \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+# 2. Install Simulation Tools (ONLY for PC / amd64)
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        echo "Building for PC (amd64) - Installing Gazebo Simulator..." && \
+        apt-get update -q && \
+        apt-get install -yq --no-install-recommends \
+        ros-${ROS_DISTRO}-ros-gz \
+        ros-${ROS_DISTRO}-gz-ros2-control \
+        && rm -rf /var/lib/apt/lists/* ; \
+    else \
+        echo "Building for Raspberry Pi (arm64) - Skipping heavy simulation tools." ; \
+    fiRUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 # 2. Setup Non-Root User (ros)
 ARG USERNAME=ros
