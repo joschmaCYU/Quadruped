@@ -1,21 +1,12 @@
 ARG ROS_DISTRO=jazzy
 
-# Tells Docker to expose the architecture variable
+# 2. Start with the LIGHTWEIGHT base image for BOTH architectures.
+FROM ros:${ROS_DISTRO}-ros-base
+
+# 3. Expose the architecture variable inside the build stage
 ARG TARGETARCH
 
-RUN if [ "$TARGETARCH" = "amd64" ]; then \
-        FROM osrf/ros:${ROS_DISTRO}-desktop
-    else \
-        FROM ros:${ROS_DISTRO}-ros-base
-    fi
-
-# Disable interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
-SHELL ["/bin/bash", "-c"]
-
-
-
-# 1. Install Essential Core Tools (For BOTH PC and Raspberry Pi)
+# 4. Install Essential Core Tools (For BOTH PC and Raspberry Pi)
 RUN apt-get update -q && \
     apt-get install -yq --no-install-recommends \
     tree \
@@ -42,17 +33,20 @@ RUN apt-get update -q && \
     ros-${ROS_DISTRO}-nav2-bringup \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Install Simulation Tools (ONLY for PC / amd64)
+# 5. Install Heavy Simulation & GUI Tools (ONLY for PC / amd64)
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-        echo "Building for PC (amd64) - Installing Gazebo Simulator..." && \
+        echo "Building for PC (amd64) - Installing Gazebo and RViz..." && \
         apt-get update -q && \
         apt-get install -yq --no-install-recommends \
+        ros-${ROS_DISTRO}-desktop \
         ros-${ROS_DISTRO}-ros-gz \
         ros-${ROS_DISTRO}-gz-ros2-control \
         && rm -rf /var/lib/apt/lists/* ; \
     else \
         echo "Building for Raspberry Pi (arm64) - Skipping heavy simulation tools." ; \
-    fiRUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+    fi
+
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
 # 2. Setup Non-Root User (ros)
 ARG USERNAME=ros
@@ -88,12 +82,12 @@ RUN mkdir -p /home/$USERNAME/ros2_ws/src/quadruped \
 COPY src/ /home/$USERNAME/ros2_ws/src/
 
 # Clone the LiDAR package ONLY if it doesn't already exist, then patch the Jazzy C++ bug
-RUN cd /home/$USERNAME/ros2_ws/src/ && \
+RUN cd /home/ros/ros2_ws/src/ && \
     if [ ! -d "ldlidar_stl_ros2" ]; then \
         git clone https://github.com/ldrobotSensorTeam/ldlidar_stl_ros2.git; \
     fi && \
     if [ "${ROS_DISTRO}" = "jazzy" ]; then \
-        sed -i 's|//#include <pthread.h>|#include <pthread.h>|g' ldlidar_stl_ros2/ldlidar_driver/include/logger/log_module.h; \
+        find ldlidar_stl_ros2 -type f -name log_module.h -exec sed -i 's|//#include <pthread.h>|#include <pthread.h>|g' {} + ; \
     fi
 
 # 5. Switch to User to install dependencies and build

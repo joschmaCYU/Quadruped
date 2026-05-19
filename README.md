@@ -27,11 +27,19 @@ python3 src/quadruped_basics/dashboard.py
 Or you can use the terminal
 ## For sim
 ```
-ros2 launch quadruped sim.launch.py
+ros2 launch quadruped sim.amcl.launch.py
+```
+or 
+```
+ros2 launch quadruped sim.slam.launch.py
 ```
 ## For the real robot
 ```
-ros2 launch quadruped display.launch.py
+ros2 launch quadruped real.amcl.launch.py
+```
+or
+```
+ros2 launch quadruped real.slam.launch.py
 ```
 
 # Tutorial -your turn to build (🚧 work in progress 🚧):

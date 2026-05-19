@@ -144,11 +144,13 @@ def generate_launch_description():
             "use_sim_time": "true",
             "map": "/home/ros/ros2_ws/src/quadruped_basics/maps/third_better_map.yaml",
             "params_file": "/home/ros/ros2_ws/src/quadruped_basics/config/my_nav2.yaml",
+            "cmd_vel_topic": "cmd_vel",
+            "use_velocity_smoother": "False",
+            "use_collision_monitor": "False",
         }.items(),
     )
 
     # Note: SLAM Toolbox node has been completely removed.
-
     # Only delay nav2_cmd now
     delayed_actions = TimerAction(period=5.0, actions=[nav2_cmd])
 
