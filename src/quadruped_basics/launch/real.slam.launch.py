@@ -105,6 +105,30 @@ def generate_launch_description():
         ],
     )
 
+    base_footprint_to_base_link_tf_node = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="base_footprint_to_base_link",
+        arguments=[
+            "--x",
+            "0",
+            "--y",
+            "0",
+            "--z",
+            "0",
+            "--roll",
+            "0",
+            "--pitch",
+            "0",
+            "--yaw",
+            "0",
+            "--frame-id",
+            "base_footprint",
+            "--child-frame-id",
+            "base_link",
+        ],
+    )
+
     nav2_rviz_config_path = os.path.join(
         get_package_share_directory("nav2_bringup"), "rviz", "nav2_default_view.rviz"
     )
@@ -153,6 +177,7 @@ def generate_launch_description():
             nav2_rviz_node,
             ldlidar_node,
             base_link_to_laser_tf_node,
+            base_footprint_to_base_link_tf_node,
             kill_process,
             microros_agent_process,
             slam_toolbox_cmd,

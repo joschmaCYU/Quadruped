@@ -127,14 +127,42 @@ graph TD
 </details>
     
 ### 4 - Navigation
-For this we will need to use gz-sim in combination with either AMCL and SLAM
+For this, we will need to use gz-sim (or the real robot) in combination with AMCL and SLAM. In the ROS 2 world, it’s not a battle of "SLAM vs. AMCL"—they work together as a team.
 #### 4.1 - SLAM
-This will be used to create the map
+What is it? SLAM is the process of a robot building a map of an unknown environment while simultaneously keeping track of its current location within that map.<br>
+What is it used for? You use SLAM (specifically the slam_toolbox package) in "Explore" mode. You manually drive your quadruped around your room using a joystick or keyboard. The LiDAR scans the walls and draws a map. Once the map is complete, you save it as a static image file (.yaml) and turn SLAM off entirely.
+```
+ros2 run nav2_map_server map_saver_cli -f my_room_map
+```
 #### 4.2 - AMCL
+Once you have a saved map, you switch to AMCL for day-to-day autonomous navigation. AMCL scatters a cloud of guesses (particles) on your map and uses the live LiDAR data to lock onto the robot's exact position.
 
+[!TIP]
+AMCL is highly recommended for walking robots. Quadrupeds suffer from "foot slip," which causes the dead-reckoning odometry to drift. If you run SLAM permanently, this slipping will slowly warp and duplicate your walls, corrupting your map. AMCL uses a locked, read-only map and simply corrects the robot's position against it, making navigation incredibly stable.
+
+#### 4.3 - Config Files
+Both AMCL (via Nav2) and SLAM require highly tuned parameters to work perfectly. You can grab the pre-configured parameters for this robot using these commands:
+```
+cd ~/ros2_ws/src/quadruped/config
+wget https://raw.githubusercontent.com/SteveMacenski/slam_toolbox/ros2/config/mapper_params_online_async.yaml -O my_slam_params.yaml
+wget https://raw.githubusercontent.com/ros-navigation/navigation2/jazzy/nav2_bringup/params/nav2_params.yaml -O my_nav2.yaml
+```
+(Note: If you cloned the repository in Step 1, these files are already in your config folder!)
 ### 5 - Bulding the robot
+Time to put the hardware together! Refer back to the wiring diagram in the Parts section, but keep these critical assembly rules in mind:
+- Power Isolation: Servos draw massive spikes of current when lifting the robot. Power your Raspberry Pi from one UBEC, and your 8 servos from the second 6A UBEC. Never try to pull servo power through the Pi or the ESP32.
+- Common Ground: This is the most frequent hardware bug. You MUST tie the ground wire of your ESP32 to the ground wire of your Servo UBEC. If you don't, the PWM signals will float and your servos will twitch violently.
+- The I2C Bus: Connect your BNO085 IMU to the ESP32 using pins 21 (SDA) and 22 (SCL). Reserve these communication lanes exclusively for the sensor.
+- LiDAR Data: Plug the LD19 LiDAR directly into one of the Raspberry Pi's USB ports (usually mounting as /dev/ttyUSB1).
 ### 6 - Sim to life
-We will be using Micro-ROS to connect our raspberry pi to our esp32. So our esp can send and read topics!<br>
+The magic of ROS 2 is that the "brain" (your Python kinematics and Nav2 planners) does not care if the robot is a Gazebo simulation or physical plastic. It just publishes to topics and waits for a response.<br>
+
+To bridge the physical hardware to the ROS 2 network, we use Micro-ROS:
+1) The ESP32 (The Muscles): We flash the ESP32 with C++ code using the micro_ros_arduino library. It acts as a lightweight ROS 2 node that subscribes to /joint_group_position_controller/commands (listening to the Python brain and moving the physical servos) and publishes /imu data at 50Hz directly from the I2C bus.
+2) The Raspberry Pi (The Brain): The Pi handles the heavy logic: Nav2, Python Inverse Kinematics, and the LiDAR drivers. Because Gazebo is too heavy for a Pi, we use an architecture-aware Dockerfile that skips installing simulation tools on ARM devices, saving gigabytes of SD card space.
+3) The Bridge: We run micro_ros_agent on the Pi. It actively listens to the USB serial port (/dev/ttyUSB0) connected to the ESP32 and seamlessly translates the microcontroller's raw serial data into standard ROS 2 topics.
+
+Once the Micro-ROS agent connects, your physical robot is officially online and will execute the exact same walk cycles you perfected in the simulator
 <br>
 <details>
 <summary>Click to view the summary of our ros2 topics when running the real robot</summary>
