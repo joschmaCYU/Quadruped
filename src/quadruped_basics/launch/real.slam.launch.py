@@ -38,27 +38,22 @@ def generate_launch_description():
         parameters=[{"use_sim_time": False}],
     )
 
-    # sudo pkill -9 micro_ros_agent
-    kill_process = ExecuteProcess(
-        cmd=["pkill", "-9", "micro_ros_agent"], output="screen"
-    )
+    # kill_process = ExecuteProcess(
+    #     cmd=[
+    #         "sudo",
+    #         "bash",
+    #         "-c",
+    #         "fuser -k /dev/ttyUSB0 || true && pkill -9 micro_ros_agent || true",
+    #     ],
+    #     output="screen",
+    # )
 
     # 4. Micro-ROS Agent via Docker (Sans le flag -it)
-    microros_agent_process = ExecuteProcess(
-        cmd=[
-            "sudo",
-            "docker",
-            "run",
-            "--rm",
-            "-v",
-            "/dev:/dev",
-            "--privileged",
-            "--net=host",
-            "microros/micro-ros-agent:jazzy",
-            "serial",
-            "--dev",
-            "/dev/ttyUSB0",
-        ],
+    microros_agent_node = Node(
+        package="micro_ros_agent",
+        executable="micro_ros_agent",
+        name="micro_ros_agent",
+        arguments=["serial", "--dev", "/dev/ttyUSB0"],
         output="screen",
     )
 
@@ -178,8 +173,8 @@ def generate_launch_description():
             ldlidar_node,
             base_link_to_laser_tf_node,
             base_footprint_to_base_link_tf_node,
-            kill_process,
-            microros_agent_process,
+            # kill_process,
+            microros_agent_node,
             slam_toolbox_cmd,
             delayed_nav2_cmd,
         ]

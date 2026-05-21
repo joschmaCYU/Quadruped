@@ -1,1 +1,0 @@
-/home/ros/ros2_ws/src/quadruped_basics/launch/sim.launch.py

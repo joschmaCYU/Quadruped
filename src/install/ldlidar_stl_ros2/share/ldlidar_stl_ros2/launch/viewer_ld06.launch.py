@@ -1,1 +1,0 @@
-/home/ros/ros2_ws/src/ldlidar_stl_ros2/launch/viewer_ld06.launch.py

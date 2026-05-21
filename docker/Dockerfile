@@ -9,7 +9,6 @@ ARG TARGETARCH
 # 4. Install Essential Core Tools (For BOTH PC and Raspberry Pi)
 RUN apt-get update -q && \
     apt-get install -yq --no-install-recommends \
-    tree \
     build-essential \
     git \
     wget \
@@ -24,6 +23,7 @@ RUN apt-get update -q && \
     python3-colcon-common-extensions \
     python3-vcstool \
     software-properties-common \
+    psmisc \
     ros-${ROS_DISTRO}-ros2-control \
     ros-${ROS_DISTRO}-ros2-controllers \
     ros-${ROS_DISTRO}-teleop-twist-keyboard \
@@ -102,10 +102,23 @@ RUN sudo apt-get update && \
     rosdep install --from-paths src --ignore-src -r -y && \
     sudo rm -rf /var/lib/apt/lists/*
 
+# ---------------------------------------------------
+# BUILD MICRO-ROS AGENT FROM SOURCE
+# ---------------------------------------------------
+RUN cd /home/ros/ros2_ws && \
+    git clone -b ${ROS_DISTRO} https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup && \
+    /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    sudo apt-get update -q && \
+    rosdep update && \
+    colcon build --packages-select micro_ros_setup && \
+    source install/local_setup.bash && \
+    ros2 run micro_ros_setup create_agent_ws.sh && \
+    ros2 run micro_ros_setup build_agent.sh && \
+    sudo rm -rf log/ build/ src/micro_ros_setup /var/lib/apt/lists/*"
+
 # 6. Build the workspace (Build time, NOT run time)
 # We source ROS 2, build, and then ensure the install setup is sourced in bashrc
-RUN source /opt/ros/${ROS_DISTRO}/setup.bash && \
-    colcon build --symlink-install
+# RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install"
 
 # 7. Setup Environment
 COPY --chown=$USERNAME:$USERNAME docker/bash_aliases.txt /home/$USERNAME/.bash_aliases
