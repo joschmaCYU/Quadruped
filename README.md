@@ -137,7 +137,7 @@ ros2 run nav2_map_server map_saver_cli -f my_room_map
 #### 4.2 - AMCL
 Once you have a saved map, you switch to AMCL for day-to-day autonomous navigation. AMCL scatters a cloud of guesses (particles) on your map and uses the live LiDAR data to lock onto the robot's exact position.
 
-[!TIP]
+> [!TIP]
 > AMCL is highly recommended for walking robots. Quadrupeds suffer from "foot slip" which causes the odometry to drift. If you run SLAM permanently, this slipping will slowly warp and duplicate your walls, corrupting your map. AMCL uses a locked, read-only map and simply corrects the robot's position against it, making navigation incredibly stable.
 > So you should use SLAM in an unknown environment and use AMCL if your environment isn't changing
 
@@ -239,12 +239,12 @@ details
 <details>
 <summary>FAQ</summary>
 <details><summary>Why is my robot not walking</summary>
-There could be multiple reasons. But I will help you.
-1) My esp32 doesn't connect to micro ros.
-Make sure to have your lidar pluged.
-If it blinks kickly 7 times it can't connect to the IMU.
-If it blinks 1 time it can't connect to ros. There could be multiple [solutions](https://github.com/joschmaCYU/quadruped/blob/main/docker/cheatsheet.md#if-robot-not-connecting-)
-If it blinks very quickly multiple time per second are your servos getting power ?
+There could be multiple reasons. But I will help you.<br>
+1) My esp32 doesn't connect to micro ros.<br>
+Make sure to have your lidar pluged.<br>
+If it blinks kickly 7 times it can't connect to the IMU.<br>
+If it blinks 1 time it can't connect to ros. There could be multiple [solutions](https://github.com/joschmaCYU/quadruped/blob/main/docker/cheatsheet.md#if-robot-not-connecting-)<br>
+If it blinks very quickly multiple time per second are your servos getting power ?<br>
 </details>
 <details><summary>Should I program in Python or C++ ?</summary>
 At the start for quick iteration you can use python and if the performance requires it switch to c++. <br><br>
