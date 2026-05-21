@@ -243,7 +243,7 @@ There could be multiple reasons. But I will help you.<br>
 1) My esp32 doesn't connect to micro ros.<br>
 Make sure to have your lidar pluged.<br>
 If it blinks kickly 7 times it can't connect to the IMU.<br>
-If it blinks 1 time it can't connect to ros. There could be multiple [solutions](https://github.com/joschmaCYU/quadruped/blob/main/docker/cheatsheet.md#if-robot-not-connecting-)<br>
+If it blinks 1 time it can't connect to ros. There could be multiple <a href="https://github.com/joschmaCYU/quadruped/blob/main/docker/cheatsheet.md#if-robot-not-connecting-">solutions</a><br>
 If it blinks very quickly multiple time per second are your servos getting power ?<br>
 </details>
 <details><summary>Should I program in Python or C++ ?</summary>
