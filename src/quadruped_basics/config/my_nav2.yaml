@@ -110,10 +110,10 @@ controller_server:
       vy_std: 0.2
       wz_std: 0.4
       # Changed to match my ik_node values
-      vx_max: 0.5
+      vx_max: 1.0
       vx_min: -0.5
       vy_max: 0.5
-      wz_max: 0.35
+      wz_max: 0.5
 
       iteration_count: 1
       prune_distance: 1.7
@@ -155,8 +155,8 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 3.81
-        near_collision_cost: 253
-        critical_cost: 300.0
+        near_collision_cost: 100 #253
+        critical_cost: 150.0 #300.0
         consider_footprint: false
         collision_cost: 1000000.0
         near_goal_distance: 1.0
@@ -366,7 +366,7 @@ velocity_smoother:
     stamp_smoothed_velocity_with_smoothing_time: False
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [0.5, 0.0, 2.5]
+    max_velocity: [1.0, 0.0, 2.5]
     min_velocity: [-0.5, 0.0, -2.5]
     max_accel: [2.5, 0.0, 3.2]
     max_decel: [-2.5, 0.0, -3.2]

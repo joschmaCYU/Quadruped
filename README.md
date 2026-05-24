@@ -42,6 +42,8 @@ or
 ros2 launch quadruped real.slam.launch.py
 ```
 
+TODO vu éclaté
+
 # Tutorial -your turn to build (🚧 work in progress 🚧):
 Follow these steps to build your own quadruped !
 

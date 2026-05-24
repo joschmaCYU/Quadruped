@@ -1,6 +1,0 @@
-**/build/
-**/install/
-**/log/
-.git/
-**/.vscode/
-**/__pycache__/

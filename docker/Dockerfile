@@ -1,14 +1,12 @@
 ARG ROS_DISTRO=jazzy
 
-# 2. Start with the LIGHTWEIGHT base image for BOTH architectures.
 FROM ros:${ROS_DISTRO}-ros-base
 
-# 3. Expose the architecture variable inside the build stage
 ARG TARGETARCH
 
-# 4. Install Essential Core Tools (For BOTH PC and Raspberry Pi)
 RUN apt-get update -q && \
     apt-get install -yq --no-install-recommends \
+    tree \
     build-essential \
     git \
     wget \
@@ -23,7 +21,6 @@ RUN apt-get update -q && \
     python3-colcon-common-extensions \
     python3-vcstool \
     software-properties-common \
-    psmisc \
     ros-${ROS_DISTRO}-ros2-control \
     ros-${ROS_DISTRO}-ros2-controllers \
     ros-${ROS_DISTRO}-teleop-twist-keyboard \
@@ -33,7 +30,6 @@ RUN apt-get update -q && \
     ros-${ROS_DISTRO}-nav2-bringup \
     && rm -rf /var/lib/apt/lists/*
 
-# 5. Install Heavy Simulation & GUI Tools (ONLY for PC / amd64)
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         echo "Building for PC (amd64) - Installing Gazebo and RViz..." && \
         apt-get update -q && \
@@ -48,7 +44,6 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
-# 2. Setup Non-Root User (ros)
 ARG USERNAME=ros
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -56,7 +51,6 @@ ARG USER_GID=$USER_UID
 # If the user 'ubuntu' or 'ros' already exists with UID 1000, we rename it to our choice
 # Otherwise, we create it.
 RUN if id -u $USER_UID >/dev/null 2>&1; then \
-        # Get the current name of user 1000
         EXISTING_USER=$(getent passwd $USER_UID | cut -d: -f1); \
         echo "User with UID $USER_UID already exists ($EXISTING_USER), reusing it."; \
         if [ "$EXISTING_USER" != "$USERNAME" ]; then \
@@ -73,63 +67,50 @@ RUN if id -u $USER_UID >/dev/null 2>&1; then \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Create Workspace and Fix Permissions
+# Create Workspace and Fix Permissions
 WORKDIR /home/$USERNAME/ros2_ws
 RUN mkdir -p /home/$USERNAME/ros2_ws/src/quadruped \
     && chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws
 
-# 4. Copy Code (Using the user flag to own the files)
-COPY src/ /home/$USERNAME/ros2_ws/src/
+# Copy Code (Using the user flag to own the files)
+COPY --chown=$USERNAME:$USERNAME src/ /home/$USERNAME/ros2_ws/src/
 
-# Clone the LiDAR package ONLY if it doesn't already exist, then patch the Jazzy C++ bug
-RUN cd /home/ros/ros2_ws/src/ && \
+USER root
+
+RUN cd /home/$USERNAME/ros2_ws/src/ && \
     if [ ! -d "ldlidar_stl_ros2" ]; then \
         git clone https://github.com/ldrobotSensorTeam/ldlidar_stl_ros2.git; \
     fi && \
     if [ "${ROS_DISTRO}" = "jazzy" ]; then \
         find ldlidar_stl_ros2 -type f -name log_module.h -exec sed -i 's|//#include <pthread.h>|#include <pthread.h>|g' {} + ; \
-    fi
+    fi && \
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws/src/ldlidar_stl_ros2
 
-# 5. Switch to User to install dependencies and build
+RUN rosdep init || true && rosdep update
+
+RUN apt-get update && \
+    rosdep install --from-paths src --ignore-src -r -y && \
+    rm -rf /var/lib/apt/lists/*
+
 USER $USERNAME
 
-# Initialize rosdep if not already done by base image
-RUN sudo rosdep init || true && rosdep update
-
-# Install dependencies defined in package.xml
-# We use 'from-paths' to look at the src folder we just copied
-RUN sudo apt-get update && \
-    rosdep install --from-paths src --ignore-src -r -y && \
-    sudo rm -rf /var/lib/apt/lists/*
-
-# ---------------------------------------------------
-# BUILD MICRO-ROS AGENT FROM SOURCE
-# ---------------------------------------------------
-RUN cd /home/ros/ros2_ws && \
-    git clone -b ${ROS_DISTRO} https://github.com/micro-ROS/micro_ros_setup.git src/micro_ros_setup && \
-    /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && \
-    sudo apt-get update -q && \
-    rosdep update && \
-    colcon build --packages-select micro_ros_setup && \
-    source install/local_setup.bash && \
-    ros2 run micro_ros_setup create_agent_ws.sh && \
-    ros2 run micro_ros_setup build_agent.sh && \
-    sudo rm -rf log/ build/ src/micro_ros_setup /var/lib/apt/lists/*"
-
-# 6. Build the workspace (Build time, NOT run time)
+# Build the workspace (Build time, NOT run time)
 # We source ROS 2, build, and then ensure the install setup is sourced in bashrc
-# RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install"
+RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install"
 
-# 7. Setup Environment
+# Setup Environment
 COPY --chown=$USERNAME:$USERNAME docker/bash_aliases.txt /home/$USERNAME/.bash_aliases
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/$USERNAME/.bashrc && \
+    echo "source /uros_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
     echo "source /home/$USERNAME/ros2_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
     echo "if [ -f ~/.bash_aliases ]; then . ~/.bash_aliases; fi" >> /home/$USERNAME/.bashrc
 
-# 8. Entrypoint
+# Entrypoint
 COPY --chown=$USERNAME:$USERNAME docker/entrypoint.sh /home/$USERNAME/entrypoint.sh
-RUN sudo chmod +x /home/$USERNAME/entrypoint.sh 
 
+USER root
+RUN chmod +x /home/$USERNAME/entrypoint.sh 
+USER $USERNAME
 
 ENTRYPOINT ["/home/ros/entrypoint.sh"]
 CMD ["/bin/bash"]
