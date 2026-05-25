@@ -1,5 +1,7 @@
 ARG ROS_DISTRO=jazzy
 
+FROM microros/micro-ros-agent:${ROS_DISTRO} AS microros_source
+
 FROM ros:${ROS_DISTRO}-ros-base
 
 ARG TARGETARCH
@@ -69,8 +71,7 @@ RUN if id -u $USER_UID >/dev/null 2>&1; then \
 
 # Create Workspace and Fix Permissions
 WORKDIR /home/$USERNAME/ros2_ws
-RUN mkdir -p /home/$USERNAME/ros2_ws/src/quadruped \
-    && chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws
+RUN chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws
 
 # Copy Code (Using the user flag to own the files)
 COPY --chown=$USERNAME:$USERNAME src/ /home/$USERNAME/ros2_ws/src/
@@ -97,6 +98,12 @@ USER $USERNAME
 # Build the workspace (Build time, NOT run time)
 # We source ROS 2, build, and then ensure the install setup is sourced in bashrc
 RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install"
+
+# Copy the micro-ROS agent workspace from the source image
+COPY --from=microros_source /uros_ws /uros_ws
+
+# Setup Environment
+COPY --chown=$USERNAME:$USERNAME docker/bash_aliases.txt /home/$USERNAME/.bash_aliases
 
 # Setup Environment
 COPY --chown=$USERNAME:$USERNAME docker/bash_aliases.txt /home/$USERNAME/.bash_aliases

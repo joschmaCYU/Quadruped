@@ -6,6 +6,7 @@ This repo is for my quadruped robot (code, 3D files, etc.). <br>
 This walking robot can autonomously navigate thanks to Nav2 and SLAM. I built this with ROS 2 Jazzy, running on an ESP32 and a Raspberry Pi.<br>
 My goal is to show examples of how to make your own autonomous quadruped with ROS 2.<br>
 ## What it can do
+(TODO show updated version)
 https://github.com/user-attachments/assets/2a4f5992-fd1c-4fa5-9b9c-b5832c5c24f9
 ## Why making a quadruped
 The answer is easy! **To learn new stuff!**
