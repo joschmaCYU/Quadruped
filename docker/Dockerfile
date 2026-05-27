@@ -1,11 +1,8 @@
 ARG ROS_DISTRO=jazzy
-
-FROM microros/micro-ros-agent:${ROS_DISTRO} AS microros_source
-
 FROM ros:${ROS_DISTRO}-ros-base
-
 ARG TARGETARCH
 
+# 1. Install System Dependencies & Tools
 RUN apt-get update -q && \
     apt-get install -yq --no-install-recommends \
     tree \
@@ -32,6 +29,7 @@ RUN apt-get update -q && \
     ros-${ROS_DISTRO}-nav2-bringup \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Heavy Simulation tools ONLY on PC
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         echo "Building for PC (amd64) - Installing Gazebo and RViz..." && \
         apt-get update -q && \
@@ -46,12 +44,11 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 
+# 2. Setup User
 ARG USERNAME=ros
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-# If the user 'ubuntu' or 'ros' already exists with UID 1000, we rename it to our choice
-# Otherwise, we create it.
 RUN if id -u $USER_UID >/dev/null 2>&1; then \
         EXISTING_USER=$(getent passwd $USER_UID | cut -d: -f1); \
         echo "User with UID $USER_UID already exists ($EXISTING_USER), reusing it."; \
@@ -69,15 +66,13 @@ RUN if id -u $USER_UID >/dev/null 2>&1; then \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && rm -rf /var/lib/apt/lists/*
 
-# Create Workspace and Fix Permissions
+# 3. Create Workspace & Copy Code
 WORKDIR /home/$USERNAME/ros2_ws
 RUN chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws
-
-# Copy Code (Using the user flag to own the files)
 COPY --chown=$USERNAME:$USERNAME src/ /home/$USERNAME/ros2_ws/src/
 
+# 4. Clone Lidar & Micro-ROS Agent into src/
 USER root
-
 RUN cd /home/$USERNAME/ros2_ws/src/ && \
     if [ ! -d "ldlidar_stl_ros2" ]; then \
         git clone https://github.com/ldrobotSensorTeam/ldlidar_stl_ros2.git; \
@@ -85,36 +80,35 @@ RUN cd /home/$USERNAME/ros2_ws/src/ && \
     if [ "${ROS_DISTRO}" = "jazzy" ]; then \
         find ldlidar_stl_ros2 -type f -name log_module.h -exec sed -i 's|//#include <pthread.h>|#include <pthread.h>|g' {} + ; \
     fi && \
-    chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws/src/ldlidar_stl_ros2
+    if [ ! -d "micro_ros_setup" ]; then \
+        git clone -b ${ROS_DISTRO} https://github.com/micro-ROS/micro_ros_setup.git micro_ros_setup; \
+    fi && \
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/ros2_ws/src
 
+# Init Rosdep
 RUN rosdep init || true && rosdep update
-
 RUN apt-get update && \
     rosdep install --from-paths src --ignore-src -r -y && \
     rm -rf /var/lib/apt/lists/*
 
+# 5. Build Workspace (RAM-Safe Sequential Build)
 USER $USERNAME
+RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && \
+    rosdep update && \
+    colcon build --packages-select micro_ros_setup --executor sequential && \
+    source install/local_setup.bash && \
+    ros2 run micro_ros_setup create_agent_ws.sh && \
+    ros2 run micro_ros_setup build_agent.sh --executor sequential && \
+    colcon build --executor sequential"
 
-# Build the workspace (Build time, NOT run time)
-# We source ROS 2, build, and then ensure the install setup is sourced in bashrc
-RUN /bin/bash -c "source /opt/ros/${ROS_DISTRO}/setup.bash && colcon build --symlink-install"
-
-# Copy the micro-ROS agent workspace from the source image
-COPY --from=microros_source /uros_ws /uros_ws
-
-# Setup Environment
-COPY --chown=$USERNAME:$USERNAME docker/bash_aliases.txt /home/$USERNAME/.bash_aliases
-
-# Setup Environment
+# 6. Setup Environment (Bashrc & Aliases)
 COPY --chown=$USERNAME:$USERNAME docker/bash_aliases.txt /home/$USERNAME/.bash_aliases
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/$USERNAME/.bashrc && \
-    echo "source /uros_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
     echo "source /home/$USERNAME/ros2_ws/install/setup.bash" >> /home/$USERNAME/.bashrc && \
     echo "if [ -f ~/.bash_aliases ]; then . ~/.bash_aliases; fi" >> /home/$USERNAME/.bashrc
 
-# Entrypoint
+# 7. Entrypoint
 COPY --chown=$USERNAME:$USERNAME docker/entrypoint.sh /home/$USERNAME/entrypoint.sh
-
 USER root
 RUN chmod +x /home/$USERNAME/entrypoint.sh 
 USER $USERNAME
