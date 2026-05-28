@@ -1,7 +1,13 @@
 # Docker
 ## Start docker
+(Create a brand new container from an image)
+sudo docker run -it --privileged --device=/dev/ttyUSB0 --device=/dev/ttyUSB1 --name quad --network host manipulation:latest bash  
+
+## Restart docker
 docker-compose up -d quadruped  
 docker-compose up -d 
+OR
+sudo docker start quad
 
 ## Stop
 docker-compose stop quadruped
@@ -15,12 +21,17 @@ xhost +
 ## Build my docker
 bash build.sh
 
+## See status
+docker images
+docker ps -a
+
 ## Remove it 
 docker rmi quadruped:latest
+sudo docker rm -f quadruped
 
-# Freecad :
-conda activate freecad_1_0_312 && freecad
-conda deactivate
+## Build and source
+colcon build --packages-select quadruped_basics
+source install/setup.bash
 
 # Pins
 ## Pair A (These legs move together):
@@ -36,7 +47,11 @@ conda deactivate
     Back Left Knee: Pin 23  
 
 # Launch robot :
-ros2 launch quadruped_basics display.launch.py
+ros2 launch quadruped_basics display.launch.py  
+
+## Teleop
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p use_sim_time:=false
+
 
 ## If robot not connecting :
 Do you see your esp and lidar ?  

@@ -1,4 +1,5 @@
 import os
+import platform
 from launch.actions import TimerAction
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -12,6 +13,11 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
     pkg_name = "quadruped_basics"
+
+    # --- AUTOMATIC ARCHITECTURE DETECTION ---
+    # Detects if running on PC (x86_64/amd64) or Raspberry Pi (aarch64/arm64)
+    machine_arch = platform.machine()
+    is_pc = machine_arch in ["x86_64", "amd64"]
 
     # Path to URDF
     urdf_path = os.path.join(
@@ -38,16 +44,6 @@ def generate_launch_description():
         parameters=[{"use_sim_time": False}],
     )
 
-    # kill_process = ExecuteProcess(
-    #     cmd=[
-    #         "sudo",
-    #         "bash",
-    #         "-c",
-    #         "fuser -k /dev/ttyUSB0 || true && pkill -9 micro_ros_agent || true",
-    #     ],
-    #     output="screen",
-    # )
-
     # 4. Micro-ROS Agent via Docker (Sans le flag -it)
     microros_agent_node = Node(
         package="micro_ros_agent",
@@ -71,8 +67,6 @@ def generate_launch_description():
             {"port_baudrate": 230400},
             {"laser_scan_dir": True},
             {"enable_angle_crop_func": False},
-            # {'angle_crop_min': 135.0},
-            # {'angle_crop_max': 225.0}
         ],
     )
 
@@ -128,6 +122,7 @@ def generate_launch_description():
         get_package_share_directory("nav2_bringup"), "rviz", "nav2_default_view.rviz"
     )
 
+    # RViz node is defined, but will only be executed if appended to the launch list
     nav2_rviz_node = Node(
         package="rviz2",
         executable="rviz2",
@@ -137,7 +132,6 @@ def generate_launch_description():
         output="screen",
     )
 
-    # ros2 launch nav2_bringup navigation_launch.py use_sim_time:=false params_file:=/home/ros/ros2_ws/src/quadruped_basics/config/my_nav2.yaml
     nav2_launch_path = os.path.join(
         get_package_share_directory("nav2_bringup"), "launch", "navigation_launch.py"
     )
@@ -150,7 +144,6 @@ def generate_launch_description():
         }.items(),
     )
 
-    # ros2 launch slam_toolbox online_async_launch.py slam_params_file:=/home/ros/ros2_ws/src/quadruped_basics/config/my_slam_params.yaml use_sim_time:=false
     slam_toolbox_launch_path = os.path.join(
         get_package_share_directory("slam_toolbox"), "launch", "online_async_launch.py"
     )
@@ -165,17 +158,20 @@ def generate_launch_description():
 
     delayed_nav2_cmd = TimerAction(period=5.0, actions=[nav2_cmd])
 
-    return LaunchDescription(
-        [
-            rsp_node,
-            ik_node,
-            nav2_rviz_node,
-            ldlidar_node,
-            base_link_to_laser_tf_node,
-            base_footprint_to_base_link_tf_node,
-            # kill_process,
-            microros_agent_node,
-            slam_toolbox_cmd,
-            delayed_nav2_cmd,
-        ]
-    )
+    # --- DYNAMIC LAUNCH LIST ---
+    launch_entities = [
+        rsp_node,
+        ik_node,
+        ldlidar_node,
+        base_link_to_laser_tf_node,
+        base_footprint_to_base_link_tf_node,
+        microros_agent_node,
+        slam_toolbox_cmd,
+        delayed_nav2_cmd,
+    ]
+
+    # Add RViz to the execution list ONLY if we are on a PC
+    if is_pc:
+        launch_entities.append(nav2_rviz_node)
+
+    return LaunchDescription(launch_entities)

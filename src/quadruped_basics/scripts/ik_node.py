@@ -52,20 +52,15 @@ class GazeboQuadrupedNode(Node):
             self.speed_multiplier = 0.08247
         else:
             self.get_logger().info("Using REAL HARDWARE multipliers")
-            self.speed_multiplier = 0.08247  # You will likely need to calculate a new one of these for real life too!
+            self.speed_multiplier = 0.08247
 
-        self.get_logger().info("Spider Brain Online! Waiting for keyboard commands...")
+        self.get_logger().info("Spider Brain Online! Waiting for commands...")
 
     def imu_callback(self, msg):
-        # Extract the quaternion from the IMU message
         q = msg.orientation
-
-        # Convert Quaternion to Euler Yaw (Z-axis rotation)
         siny_cosp = 2.0 * (q.w * q.z + q.x * q.y)
         cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
         self.odom_yaw = math.atan2(siny_cosp, cosy_cosp)
-
-        # We now overwrite self.odom_yaw with the absolute truth from the IMU!
         self.actual_turn_speed = msg.angular_velocity.z
 
     def override_callback(self, msg):
@@ -76,26 +71,19 @@ class GazeboQuadrupedNode(Node):
         self.cmd_w = msg.angular.z
 
     def calculate_ik(self, x, z):
-        # 1. Physical Leg Lengths
-        L1 = 0.206  # Pink thigh (horizontal sweep)
-        L2 = 0.250  # Yellow calf (vertical lift)
+        L1 = 0.206
+        L2 = 0.250
 
-        # 2. Safety Cap! Prevent the math from crashing if we ask it to stretch too far.
-        z = max(z, -0.24)
+        # FIX 1: Limite augmentée pour ne pas bloquer la hauteur de marche
+        z = max(z, -0.26)
         z = min(z, 0.0)
 
-        # 3. KNEE MATH (Controls Height)
-        # Because your URDF draws the calf pointing straight down when angle is 0:
-        # A 0 angle means straight down. A larger angle bends it outwards.
         cos_knee = abs(z) / L2
         cos_knee = max(0.0, min(1.0, cos_knee))
         knee_angle = math.acos(cos_knee)
 
-        # 4. SHOULDER MATH (Controls Forward Stride)
-        # Calculate how far out the foot currently is due to the knee bend
         horizontal_reach = L1 + (L2 * math.sin(knee_angle))
 
-        # Calculate the sweep angle required to move 'x' meters forward
         step_reach = x / horizontal_reach
         step_reach = max(-1.0, min(1.0, step_reach))
         shoulder_angle = math.asin(step_reach)
@@ -107,10 +95,15 @@ class GazeboQuadrupedNode(Node):
         duty_factor = 0.60
         cycle_progress = ((t / T) + phase_offset) % 1.0
 
-        # --- SPIDER GAIT SETTINGS ---
-        stride_length = 0.25  # 15cm max steps
-        step_height = 0.08  # Lift foot 8cm into the air
-        stand_height = -0.25  # Keep the hip 20cm off the floor (Safe for L2=25cm)
+        stride_length = 0.25
+        step_height = 0.08
+
+        # FIX 2: Hauteur unifiée entre l'arrêt et la marche
+        stand_height = -0.22
+
+        # FIX 3: Hauteur de pas dynamique !
+        # Si le robot fait un tout petit pas (ex: marche arrière lente), il lève moins haut la patte.
+        actual_step_height = step_height * min(1.0, max(0.2, abs(step_scale)))
 
         if cycle_progress < duty_factor:
             # STANCE PHASE
@@ -121,9 +114,8 @@ class GazeboQuadrupedNode(Node):
             # SWING PHASE
             swing_p = (cycle_progress - duty_factor) / (1.0 - duty_factor)
             target_x = -(stride_length / 2.0) + (stride_length * swing_p)
-            target_z = stand_height + (step_height * math.sin(swing_p * math.pi))
+            target_z = stand_height + (actual_step_height * math.sin(swing_p * math.pi))
 
-        # SCALE THE PHYSICAL STEP (Not the joint angle!)
         target_x = target_x * step_scale
 
         return self.calculate_ik(target_x, target_z)
@@ -131,6 +123,8 @@ class GazeboQuadrupedNode(Node):
     def timer_callback(self):
         if self.cmd_x != 0.0 or self.cmd_w != 0.0:
             self.walk_time += self.dt
+        else:
+            self.walk_time = 0.0  # Réinitialise le cycle quand on s'arrête proprement
 
         self.odom_x += (
             self.cmd_x * self.speed_multiplier * math.cos(self.odom_yaw)
@@ -173,12 +167,11 @@ class GazeboQuadrupedNode(Node):
 
         # --- KINEMATICS ---
         is_moving = self.cmd_x != 0.0 or self.cmd_w != 0.0
-
         msg = Float64MultiArray()
 
         if not is_moving:
-            # IDLE STATE: Snap to perfect standing pose
-            stand_height = -0.20
+            # IDLE STATE: Snap to unified standing pose
+            stand_height = -0.22
             idle_shoulder, idle_knee = self.calculate_ik(0.0, stand_height)
             msg.data = [
                 float(idle_shoulder),
@@ -191,7 +184,6 @@ class GazeboQuadrupedNode(Node):
                 float(idle_knee),  # BL
             ]
         else:
-            # WALKING STATE: Use self.cmd_w which contains the mechanical trim
             amp_FL = self.cmd_x - (self.cmd_w * 1.5)
             amp_FR = self.cmd_x + (self.cmd_w * 1.5)
             amp_BL = self.cmd_x - (self.cmd_w * 1.5)
