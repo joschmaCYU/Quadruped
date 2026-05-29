@@ -5,10 +5,9 @@
 This repo is for my quadruped robot (code, 3D files, etc.). <br>
 This walking robot can autonomously navigate thanks to Nav2 and SLAM. I built this with ROS 2 Jazzy, running on an ESP32 and a Raspberry Pi.<br>
 My goal is to show examples of how to make your own autonomous quadruped with ROS 2.<br>
-## What it can do
-(TODO show updated version)<br>
+## What it can do autonomusly
+https://github.com/user-attachments/assets/3d5b31a4-0d8b-42e6-84e3-0cbd97a148bf
 
-https://github.com/user-attachments/assets/2a4f5992-fd1c-4fa5-9b9c-b5832c5c24f9
 ## Why making a quadruped
 The short answer is: **To learn!** The real answer is: To prepare for my futur internship at mitacs globalink research internship at the University of Calgary (in the Robotarium Lab).
 
@@ -78,6 +77,10 @@ Now that you implemented everything to make the robot let's make it move!<br>
 You will have to [launch gz-sim and run the urdf spawn script](https://gazebosim.org/docs/latest/spawn_urdf/)<br>
 ```ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p use_sim_time:=true```
 <br>
+
+
+https://github.com/user-attachments/assets/2a4f5992-fd1c-4fa5-9b9c-b5832c5c24f9
+
 <details>
 <summary>Click to view the summary of ros2 topics (for sim):</summary>
     
