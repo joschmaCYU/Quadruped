@@ -137,11 +137,11 @@ graph TD
 Now that your robot exists in simulation, it needs to understand its environment. In the ROS 2 world, we use a combination of SLAM (to draw the map) and AMCL (to localize the robot within that map). <br>
 [Learn how to configure and tune Nav2 for a quadruped](NavigationREADME.md)
 
-### 5 - Building the Physical Robot
+### 5 - Building the physical robot
 Time to move from Gazebo to the real world. Putting the hardware together requires careful power management and wire routing. <br>
 [See the assembly guide, wiring rules, and power management](HardwareREADME.md)
 
-### 6 - Sim to Life (The Micro-ROS Bridge)
+### 6 - Sim to life (the micro-ROS bridge)
 The magic of ROS 2 is that the "brain" (your Python kinematics and Nav2 planners) does not care if the robot is a Gazebo simulation or physical plastic. To bridge the physical hardware to the ROS 2 network, we use an ESP32 running Micro-ROS and a Raspberry Pi acting as the agent. <br>
 [Learn how to flash the ESP32 and bridge it to ROS 2](RealRobotREADME.md)
 
