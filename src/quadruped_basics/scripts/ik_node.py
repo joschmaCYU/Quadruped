@@ -121,6 +121,12 @@ class GazeboQuadrupedNode(Node):
         return self.calculate_ik(target_x, target_z)
 
     def timer_callback(self):
+        if self.cmd_w != 0.0:
+            # On simule la rotation cinématique en attendant la réponse de l'IMU
+            self.odom_yaw += self.cmd_w * self.dt
+            # Optionnel : Garder l'angle entre -Pi et Pi
+            self.odom_yaw = (self.odom_yaw + math.pi) % (2 * math.pi) - math.pi
+
         if self.cmd_x != 0.0 or self.cmd_w != 0.0:
             self.walk_time += self.dt
         else:

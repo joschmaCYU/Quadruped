@@ -37,6 +37,8 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
         ros-${ROS_DISTRO}-desktop \
         ros-${ROS_DISTRO}-ros-gz \
         ros-${ROS_DISTRO}-gz-ros2-control \
+        python3-tk \
+        python3-matplotlib \
         && rm -rf /var/lib/apt/lists/* ; \
     else \
         echo "Building for Raspberry Pi (arm64) - Skipping heavy simulation tools." ; \

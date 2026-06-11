@@ -88,7 +88,7 @@ def generate_launch_description():
             "--yaw",
             "0",
             "--frame-id",
-            "base_footprint",
+            "base_link",
             "--child-frame-id",
             "base_laser",
         ],

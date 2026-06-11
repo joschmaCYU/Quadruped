@@ -64,6 +64,8 @@ Are there multiple instance of micro ros ?
 sudo fuser -v /dev/ttyUSB0 && sudo pkill -9 micro_ros_agent  
 Try to connect in an empty container:  
 sudo docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agent:jazzy serial --dev /dev/ttyUSB0 -v6  
+OR
+ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0
 
 # Launch  sim + robot brain
 ros2 launch quadruped_basics sim.amcl.launch.py  
