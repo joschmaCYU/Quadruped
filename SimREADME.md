@@ -130,7 +130,7 @@ self.odom_y += (self.cmd_x * self.speed_multiplier * math.sin(self.odom_yaw)) * 
 ```
 
 Turning:
-```mermaid
+```
     # Turn by making one side take larger steps
     amp_FL = self.cmd_x - (self.cmd_w * 1.5)
     amp_FR = self.cmd_x + (self.cmd_w * 1.5)

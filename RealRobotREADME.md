@@ -1,11 +1,11 @@
-# Sim to life (The Micro-ROS Bridge)
+# Sim to life (the micro-ROS bridge)
 
 The magic of ROS 2 is that the "brain" (your Python kinematics and Nav2 planners) does not care if the robot is a Gazebo simulation or physical plastic. It just publishes to topics and waits for a response.
 
-## The Architecture
+## The architecture
 To bridge the physical hardware to the ROS 2 network, we use a distributed system:
 1.  **The ESP32** Flashed with a Micro-ROS node (via Arduino IDE). It subscribes to `/joint_group_position_controller/commands` to move the physical servos and publishes `/imu`. 
-2.  **The raspberry Pi** Handles the heavy logic: Nav2, Python Inverse Kinematics, and LiDAR drivers. It runs a Dockerized, ROS 2 Jazzy environment.
+2.  **The raspberry pi** Handles the heavy logic: Nav2, Python Inverse Kinematics, and LiDAR drivers. It runs a Dockerized, ROS 2 Jazzy environment.
 3.  **The bridge:** The Pi runs `micro_ros_agent`. It actively listens to the USB serial port (`/dev/ttyUSB0`) connected to the ESP32 and translates the microcontroller's data into standard ROS 2 topics.
 
 <img width="644" height="466" src="https://www.rototron.info/wp-content/uploads/ESP32_Repair01.jpg" />
@@ -19,10 +19,10 @@ Another problem is that I used a slow sd card with only 16Go. You will need at l
 
 ---
 
-## Roadblocks & Solutions: Bridging Software to Reality
+## Roadblocks & Solutions: bridging software to reality
 Translating perfect simulation math to messy physical hardware required several strict code adjustments.
 
-### Upside-Down LiDAR Logic
+### Upside-down LiDAR logic
 **The problem:** the robot would turn left, but the LiDAR perceived the walls shifting the wrong way, immediately breaking the SLAM map.
 **The fix:** because the LiDAR is physically mounted upside down on the 3D-printed chassis, its physical rotation is mechanically reversed. I fixed this in the `real.slam.launch.py` by applying a **3.14159 rad** (180-degree) roll to the `static_transform_publisher` between `base_link` and `base_laser`. 
 

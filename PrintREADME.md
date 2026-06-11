@@ -4,7 +4,7 @@ So you want to design your robot, I have a few tips for you.<br>
 Beggin by (and I strongly advise you to do so) take a pencil and a sheet of paper and try to draw your robot!
 
 My sketches: <br>
-<img width="644" height="466" alt="Autre (19)" src="https://github.com/user-attachments/assets/6e8cc93c-b071-4589-9d92-290925689307" />
+<img width="644" height="466" src="https://github.com/user-attachments/assets/6e8cc93c-b071-4589-9d92-290925689307" />
 <br>
 
 This will help you refine your idea. You will have to ask yourself many questions about how it will move, its height, its length, etc.<br>
