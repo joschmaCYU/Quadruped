@@ -3,6 +3,9 @@ As stated before we will be using ROS 2 but it needs power to run ! Thats why yo
 To communicate with the servos and other actuators I choose an ESP32. You could plug everything but the rasp has only 4 PWM pins and you can't just plug the servos to any GPIO pins else they will not act as you want.<br>
 To sens the world I choose a 2D lidar (for SLAM/Navigation). This will mesure how far away the obstacles are.
 
+<img width="644" height="466" src="https://github.com/user-attachments/assets/6417944d-0f2c-459d-984a-4ef052d83b80" />
+
+
 > [!TIP]
 > You don't need to place the lidar low to the ground because you will be able to move your legs up, so even if the lidar doesn't detect the obstacle your robot will still be able to pass over it.
 
