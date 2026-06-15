@@ -1,5 +1,4 @@
-### HardwareREADME.md
-# Building the physical robot
+## Building the physical robot
 Time to put the hardware together! Moving from simulation to a physical quadruped requires strict attention to power distribution and data bus management.
 
 ## Critical assembly rules
@@ -44,21 +43,22 @@ flowchart TD
 Physics doesn't care about your code. Here is the main electrical hurdle I had to overcome during the build.
 
 > [!TIP]
-> You can put on/off switches between your battery and your raspberry pi so that you don't need to constantly plug your battery.
+> **Install physical switches!**. Simple on/off toggle between your battery and your raspberry pi so that you don't need to constantly plug your battery.
 
-#### Link between esp and your PC
+### Link between esp and your PC
 <img width="644" height="466" src="https://static0.xdaimages.com/wordpress/wp-content/uploads/wm/2026/02/using-esp32-to-wake-on-lan-for-home-pc-remotely.JPG" />
-For now you will plug your esp32 to your pc but I had a lot of issue whith that. So when you plug for the first time your esp try to connect in an empty container:  
+1) For now you will plug your esp32 to your pc but I had a lot of issue whith that. So when you plug for the first time your esp try to connect in an empty container:  
 
 ```
 sudo docker run -it --rm -v /dev:/dev --privileged --net=host microros/micro-ros-agent:jazzy serial --dev /dev/ttyUSB0 -v6
 ```
-If it doesn't connect try to press the rest button you your esp.<br>
-Some times the instance of microros wasn't killed properly so you have to check if there are there multiple instance of micro ros ?  
+2) If it doesn't connect try to press the `EN` / `RST` button you your esp.<br>
+3) Some times the instance of microros wasn't killed properly so you have to check if there are there multiple instance of `micro_ros_agent` ?  
 ```
 sudo fuser -v /dev/ttyUSB0 && sudo pkill -9 micro_ros_agent  
 ```
-If it still doesn't work becarfull that your usb cable support data transmission (often cheap cables don't work).
+4) If it still doesn't work becarfull that your usb cable support data transmission (often cheap cables don't work).
+5) And last be not least be sure that your esp is on `/dev/ttyUSB0`.
 
 ### The 4.43V servo brownout
 **The problem:** Despite using a 5V/6V 3A adjustable UBEC to power the servos, a multimeter showed the output maxing out at exactly 4.43V. The servos lacked the torque to lift the robot's body.<br>
