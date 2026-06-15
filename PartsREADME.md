@@ -1,21 +1,37 @@
-### 1 - Parts
-As stated before we will be using ROS 2 but it needs power to run ! Thats why you will need something powerfull like a raspberry pi.<br>
-To communicate with the servos and other actuators I choose an ESP32. You could plug everything but the rasp has only 4 PWM pins and you can't just plug the servos to any GPIO pins else they will not act as you want.<br>
-To sens the world I choose a 2D lidar (for SLAM/Navigation). This will mesure how far away the obstacles are.
+## 1 - Parts
+For our robot to exist it needs a body. We will cover the three main pillars of our build: computation, perception, and power management. 
 
 <img width="844" height="466" src="https://github.com/user-attachments/assets/6417944d-0f2c-459d-984a-4ef052d83b80" />
 
+### Computation
+As stated before we will be using ROS 2 but it needs something powerfull to run ! But we also need some thing to communicate with the servos and other actuators.
+- The brain: `raspberry pi`
+- The musclues: `ESP32`
+
+You could plug everything but the rasp has only 4 PWM pins and you can't just plug the servos to any GPIO pins else they will not act as you want.<br>
+
+### Perception
+To sens the world I choose a `2D lidar`. This will mesure how far away the obstacles are. I choose a ld-19 but any lidar will do the trick. <br>
+To sens how our robot will move we will need an `IMU`.
 
 > [!TIP]
 > You don't need to place the lidar low to the ground because you will be able to move your legs up, so even if the lidar doesn't detect the obstacle your robot will still be able to pass over it.
 
-The power side is not more complicated. If you want to move multiple servos at the same time your boards will not provide sufficiant power you will need a battery. <br>
-I chose a small 2200mAh LiPo Battery with 3 cells that will produce 11.1V. But the servos need 5v to operate, so you need to make sure to provide exaclty these 5v else your servo will not function very well. So you will need a 5V/6A UBEC which regulates the voltage. Why 6A ? Because each mg90s uses a max of 750mA * 8 = 6000mA at 5V.
-> [!WARNING]
-> You should always use a more powerfull device to not burn it
-> If your servo use more then 6A be sure to take a more powerfull UBEC
+### Power
+The power side isn't more complicated. If you want to move multiple servos at the same time your boards will not provide sufficiant power you will need a battery.<br>
+I chose a small `2200mAh (3S) LiPo battery`. This battery has 3 cells that will produce 11.1V.<br>
+But the servos need 5v to operate, so you need to make sure to provide exaclty these 5v else your servo will... hmmmm... not function very well. So you will need a `5V/6A UBEC` which regulates the voltage. Why 6A ? Because each mg90s uses a max of 750mA * 8 = 6000mA at 5V.
 
-We need to not forget the rasperry pi which needs also 5V but will not pull more then 3A so I took a 5V/3A UBEC for it!
+> [!WARNING]
+> You should always use a more powerfull device to not burn it.  
+> If your servo use more then 6A be sure to take a more powerfull UBEC.  
+> You also should be carfull between peek and sustain consumption.  
+<br>
+
+### The motors
+For the motors I went with simple dirt cheap (and weak) MG-90S. Why ? Hmmmm... I may or may not have more have more then 200 of them lying around. Yeaaaaa don't ask to many question. But jokes a part in robotics we often reuse old parts that we have lying around and it isn't a bad idea!
+
+Do not forget the rasperry pi which needs also 5V but will not pull more then 3A so I took a `5V/3A UBEC` for it!
 
 <details>
 <summary>Sketch of my electronic:</summary>
@@ -42,7 +58,7 @@ graph TD
     subgraph Peripherals ["Sensors & Actuators"]
         SERVOS("8x Servos<br>(V+, GND, Signal)"):::motor
         IMU("BNO085 IMU"):::sensor
-        LD19("LD19 LiDAR<br>(via CP2102 USB board)"):::sensor
+        LD19("LiDAR<br>(via CP2102 USB board)"):::sensor
     end
 
     %% --- POWER ROUTING (Solid Lines) ---

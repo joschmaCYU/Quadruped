@@ -50,3 +50,6 @@ Getting Nav2 and SLAM to respect a custom quadruped geometry required solving so
 **The fix**: this was a TF conflict.
 1) In my_nav2.yaml, the robot_base_frame was mistakenly set to base_link instead of base_footprint.
 2) Verify that your IMU is connected and that it's publishing.
+
+
+Congrats you have made the most difficult part now lets [build the robot](https://github.com/joschmaCYU/quadruped/blob/main/HardwareREADME.md)

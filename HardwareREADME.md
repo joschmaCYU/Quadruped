@@ -64,3 +64,5 @@ If it still doesn't work becarfull that your usb cable support data transmission
 **The problem:** Despite using a 5V/6V 3A adjustable UBEC to power the servos, a multimeter showed the output maxing out at exactly 4.43V. The servos lacked the torque to lift the robot's body.<br>
 **The fix:** A UBEC is a step-down (buck) converter it has a physical "dropout voltage" of around 0.6V and requires an input voltage strictly higher than its target output. Feeding 5V will mathematically results in a drop to ~4.4V. 
 I solved this by supplying the UBEC directly from a LiPo battery.
+
+And now the [real fun can beggin](https://github.com/joschmaCYU/quadruped/blob/main/RealRobotREADME.md)
