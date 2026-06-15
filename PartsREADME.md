@@ -1,7 +1,7 @@
 ## 1 - Parts
 For our robot to exist it needs a body. We will cover the three main pillars of our build: computation, perception, and power management. 
 
-<img width="844" height="466" src="https://github.com/user-attachments/assets/6417944d-0f2c-459d-984a-4ef052d83b80" />
+<img width="3840" height="2160" src="https://github.com/user-attachments/assets/54404471-d208-4c6b-a472-0d550b9f0ba9" />
 
 ### Computation
 As stated before we will be using ROS 2 but it needs something powerfull to run ! But we also need some thing to communicate with the servos and other actuators.
