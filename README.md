@@ -45,7 +45,7 @@ ros2 launch quadruped real.slam.launch.py
 
 TODO vu éclaté
 
-# Tutorial -your turn to build (🚧 work in progress 🚧):
+# Tutorial -your turn to build:
 Follow these steps to build your own quadruped !
 
 ### 0 - What will my robot do ?
